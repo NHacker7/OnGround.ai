@@ -21,6 +21,20 @@ export interface UserProfile {
   directExtension?: string;
 }
 
+export interface AppNotification {
+  id: string;
+  title: string;
+  category: 'Missed Call' | 'Pulse AI' | 'Meeting' | 'Buying Signal';
+  message: string;
+  timestamp: string;
+  read: boolean;
+  leadId?: string;
+  actionScreen?: ScreenId;
+  actionChannelId?: string;
+  value?: string;
+  priority?: 'urgent' | 'gold' | 'sage';
+}
+
 export interface BuyingSignal {
   id: string;
   title: string;

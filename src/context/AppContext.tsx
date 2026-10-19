@@ -9,6 +9,7 @@ import {
   DashboardTask,
   KPIStats,
   UserProfile,
+  AppNotification,
 } from '../types';
 import {
   INITIAL_LEADS,
@@ -33,6 +34,55 @@ const DEFAULT_USER_PROFILE: UserProfile = {
   directExtension: 'Ext. 4022',
 };
 
+const INITIAL_NOTIFICATIONS: AppNotification[] = [
+  {
+    id: 'notif-1',
+    title: 'Urgent Missed Call',
+    category: 'Missed Call',
+    message: 'Marcus Vance (Vertex) called back regarding benchmarking',
+    timestamp: '18 minutes ago',
+    read: false,
+    priority: 'urgent',
+    leadId: 'lead-1',
+    actionScreen: 'incoming',
+    value: '$48,000 ARR',
+  },
+  {
+    id: 'notif-2',
+    title: 'Pulse AI Escalation',
+    category: 'Pulse AI',
+    message: '15% discount request from Apex in #deal-desk requires approval',
+    timestamp: '1 hour ago',
+    read: false,
+    priority: 'gold',
+    actionScreen: 'pulse-channel',
+    actionChannelId: 'chan-deal-desk',
+  },
+  {
+    id: 'notif-3',
+    title: 'Upcoming Platform Demo',
+    category: 'Meeting',
+    message: 'Executive demo with Sophia Sterling (Horizon Logistics Global)',
+    timestamp: 'Today, 4:00 PM',
+    read: false,
+    priority: 'sage',
+    leadId: 'lead-2',
+    actionScreen: 'calendar',
+    value: '$34,500 ARR',
+  },
+  {
+    id: 'notif-4',
+    title: 'High-Intent Buying Signal',
+    category: 'Buying Signal',
+    message: 'David Kalu (FinPulse) downloaded PCI-DSS Compliance Whitepaper',
+    timestamp: 'Today, 1:40 PM',
+    read: false,
+    priority: 'sage',
+    leadId: 'lead-3',
+    value: '$62,000 ARR',
+  },
+];
+
 interface AppContextType {
   activeScreen: ScreenId;
   setActiveScreen: (screen: ScreenId) => void;
@@ -40,6 +90,10 @@ interface AppContextType {
   setActiveChannelId: (channelId: string) => void;
   userProfile: UserProfile;
   updateUserProfile: (newProfile: UserProfile) => void;
+  notifications: AppNotification[];
+  unreadNotificationCount: number;
+  markAllNotificationsRead: () => void;
+  markNotificationRead: (id: string) => void;
   leads: Lead[];
   callRecords: CallRecord[];
   incomingCalls: IncomingCall[];
@@ -88,6 +142,45 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       console.warn('Failed to persist profile to localStorage', e);
     }
   };
+
+  const [notifications, setNotifications] = useState<AppNotification[]>(() => {
+    try {
+      const saved = localStorage.getItem('onground_notifications');
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    } catch (e) {
+      console.warn('Failed to load notifications from localStorage', e);
+    }
+    return INITIAL_NOTIFICATIONS;
+  });
+
+  const unreadNotificationCount = notifications.filter((n) => !n.read).length;
+
+  const markAllNotificationsRead = () => {
+    setNotifications((prev) => {
+      const updated = prev.map((n) => ({ ...n, read: true }));
+      try {
+        localStorage.setItem('onground_notifications', JSON.stringify(updated));
+      } catch (e) {
+        console.warn('Failed to save notifications to localStorage', e);
+      }
+      return updated;
+    });
+  };
+
+  const markNotificationRead = (id: string) => {
+    setNotifications((prev) => {
+      const updated = prev.map((n) => (n.id === id ? { ...n, read: true } : n));
+      try {
+        localStorage.setItem('onground_notifications', JSON.stringify(updated));
+      } catch (e) {
+        console.warn('Failed to save notifications to localStorage', e);
+      }
+      return updated;
+    });
+  };
+
   const [leads, setLeads] = useState<Lead[]>(INITIAL_LEADS);
   const [callRecords, setCallRecords] = useState<CallRecord[]>(INITIAL_CALL_RECORDS);
   const [incomingCalls, setIncomingCalls] = useState<IncomingCall[]>(INITIAL_INCOMING_CALLS);
@@ -295,6 +388,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setActiveChannelId,
         userProfile,
         updateUserProfile,
+        notifications,
+        unreadNotificationCount,
+        markAllNotificationsRead,
+        markNotificationRead,
         leads,
         callRecords,
         incomingCalls,

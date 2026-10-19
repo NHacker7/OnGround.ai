@@ -8,6 +8,8 @@ import {
   Sparkles,
   Calendar,
   CheckCircle2,
+  CheckCheck,
+  Check,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useCalling } from '../../context/CallingContext';
@@ -18,7 +20,17 @@ interface TopNavProps {
 }
 
 export const TopNav: React.FC<TopNavProps> = ({ setMobileOpen }) => {
-  const { leads, openLeadModal, tasks } = useApp();
+  const {
+    leads,
+    openLeadModal,
+    tasks,
+    notifications,
+    unreadNotificationCount,
+    markAllNotificationsRead,
+    markNotificationRead,
+    setActiveScreen,
+    setActiveChannelId,
+  } = useApp();
   const { startCall } = useCalling();
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearchResults, setShowSearchResults] = useState(false);
@@ -147,37 +159,150 @@ export const TopNav: React.FC<TopNavProps> = ({ setMobileOpen }) => {
           <button
             type="button"
             onClick={() => setNotificationsOpen((prev) => !prev)}
-            className="relative p-2.5 rounded-xl bg-white border border-ivory-border text-charcoal hover:bg-ivory transition-colors shadow-2xs"
+            className="relative p-2.5 rounded-xl bg-white border border-ivory-border text-charcoal hover:bg-ivory transition-colors shadow-2xs group"
             title="Notifications"
           >
-            <Bell className="w-4 h-4 text-charcoal" />
-            <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-gold" />
+            <Bell className="w-4 h-4 text-charcoal group-hover:text-forest transition-colors" />
+            {unreadNotificationCount > 0 && (
+              <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-gold text-forest-dark font-extrabold text-[10px] flex items-center justify-center border-2 border-white shadow-xs animate-in zoom-in-75">
+                {unreadNotificationCount}
+              </span>
+            )}
           </button>
+
+          {/* Invisible Backdrop to close on outside click */}
+          {notificationsOpen && (
+            <div
+              className="fixed inset-0 z-40"
+              onClick={() => setNotificationsOpen(false)}
+            />
+          )}
 
           {/* Notifications Dropdown */}
           {notificationsOpen && (
-            <div className="absolute right-0 mt-2 w-80 bg-white border border-ivory-border rounded-2xl shadow-xl overflow-hidden z-50">
-              <div className="p-3 bg-ivory-subtle border-b border-ivory-border flex items-center justify-between">
-                <span className="text-xs font-bold text-charcoal">Activity & Alerts</span>
-                <span className="text-[10px] text-sage font-bold">Mark all read</span>
+            <div className="absolute right-0 mt-2 w-84 sm:w-92 bg-white border border-ivory-border rounded-2xl shadow-xl overflow-hidden z-50 animate-in fade-in zoom-in-95">
+              {/* Dropdown Header */}
+              <div className="p-3.5 bg-ivory-subtle border-b border-ivory-border flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-charcoal">Activity & Alerts</span>
+                  {unreadNotificationCount > 0 ? (
+                    <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-gold-light text-gold-text border border-gold-border">
+                      {unreadNotificationCount} new
+                    </span>
+                  ) : (
+                    <span className="text-[10px] font-semibold text-charcoal-muted">All read</span>
+                  )}
+                </div>
+
+                {/* Mark All Read Button */}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    markAllNotificationsRead();
+                  }}
+                  disabled={unreadNotificationCount === 0}
+                  className={`text-[11px] font-bold px-2.5 py-1 rounded-lg transition-all flex items-center gap-1 ${
+                    unreadNotificationCount > 0
+                      ? 'text-sage hover:text-white hover:bg-sage active:scale-95 cursor-pointer shadow-2xs'
+                      : 'text-charcoal-muted/50 cursor-not-allowed opacity-60'
+                  }`}
+                  title="Mark all notifications as read"
+                >
+                  <CheckCheck className="w-3.5 h-3.5" />
+                  <span>Mark all read</span>
+                </button>
               </div>
-              <div className="divide-y divide-ivory-border text-xs max-h-72 overflow-y-auto">
-                <div className="p-3 hover:bg-ivory cursor-pointer">
-                  <div className="flex items-center gap-1.5 text-red-600 font-bold text-[11px] mb-0.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-red-600" />
-                    Urgent Missed Call
+
+              {/* Notification Items List */}
+              <div className="divide-y divide-ivory-border text-xs max-h-80 overflow-y-auto">
+                {notifications.length > 0 ? (
+                  notifications.map((notif) => (
+                    <div
+                      key={notif.id}
+                      onClick={() => {
+                        markNotificationRead(notif.id);
+                        if (notif.leadId) {
+                          openLeadModal(notif.leadId);
+                        } else if (notif.actionScreen === 'pulse-channel') {
+                          if (notif.actionChannelId) {
+                            setActiveChannelId(notif.actionChannelId);
+                          }
+                          setActiveScreen('pulse-channel');
+                        } else if (notif.actionScreen) {
+                          setActiveScreen(notif.actionScreen);
+                        }
+                        setNotificationsOpen(false);
+                      }}
+                      className={`p-3.5 transition-colors cursor-pointer group relative ${
+                        !notif.read
+                          ? 'bg-white hover:bg-ivory/70'
+                          : 'bg-ivory-subtle/30 hover:bg-ivory-subtle text-charcoal-muted'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-1.5 font-bold text-[11px] mb-0.5">
+                          {!notif.read ? (
+                            <span
+                              className={`w-2 h-2 rounded-full shrink-0 ${
+                                notif.priority === 'urgent'
+                                  ? 'bg-red-500 animate-pulse'
+                                  : notif.priority === 'gold'
+                                  ? 'bg-gold animate-pulse'
+                                  : 'bg-sage'
+                              }`}
+                            />
+                          ) : (
+                            <Check className="w-3 h-3 text-emerald-600 shrink-0" />
+                          )}
+                          <span
+                            className={
+                              !notif.read
+                                ? notif.priority === 'urgent'
+                                  ? 'text-red-600'
+                                  : notif.priority === 'gold'
+                                  ? 'text-gold-text'
+                                  : 'text-sage'
+                                : 'text-charcoal-muted'
+                            }
+                          >
+                            {notif.title}
+                          </span>
+                        </div>
+
+                        <span className="text-[10px] font-mono text-charcoal-muted shrink-0">
+                          {notif.timestamp}
+                        </span>
+                      </div>
+
+                      <p
+                        className={`text-xs mt-0.5 leading-snug ${
+                          !notif.read ? 'font-semibold text-charcoal' : 'text-charcoal-muted'
+                        }`}
+                      >
+                        {notif.message}
+                      </p>
+
+                      {notif.value && (
+                        <span className="inline-block mt-1.5 text-[10px] font-mono font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                          Deal Value: {notif.value}
+                        </span>
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <div className="p-6 text-center text-xs text-charcoal-muted">
+                    No notifications at this time.
                   </div>
-                  <p className="text-charcoal font-semibold">Marcus Vance (Vertex) called</p>
-                  <p className="text-[11px] text-charcoal-muted">18 minutes ago • $48,000 ARR</p>
-                </div>
-                <div className="p-3 hover:bg-ivory cursor-pointer">
-                  <div className="flex items-center gap-1.5 text-gold-text font-bold text-[11px] mb-0.5">
-                    <Sparkles className="w-3 h-3 text-gold" />
-                    Pulse AI Escalation
-                  </div>
-                  <p className="text-charcoal font-semibold">15% discount request from Apex</p>
-                  <p className="text-[11px] text-charcoal-muted">1 hour ago in #deal-desk</p>
-                </div>
+                )}
+              </div>
+
+              {/* Dropdown Footer */}
+              <div className="p-2.5 bg-ivory-subtle border-t border-ivory-border text-center text-[10px] text-charcoal-muted font-medium">
+                {unreadNotificationCount === 0
+                  ? '✓ All alerts marked as read'
+                  : `${unreadNotificationCount} unread alert${unreadNotificationCount === 1 ? '' : 's'}`}
               </div>
             </div>
           )}
