@@ -1,31 +1,39 @@
 # OnGround.ai — AI-Powered Call Centre
 
-An AI-assisted call centre application designed to help teams manage customer calls, organize leads, track follow-ups, and collaborate through a unified workspace.
+An AI-assisted call centre application designed to simplify customer calling workflows, prioritize leads, manage follow-ups, and improve team collaboration through a unified workspace.
+
+<p align="center">
+  <a href="https://ongroundai-zeta.vercel.app/"><strong>🚀 Live Demo</strong></a>
+  &nbsp; | &nbsp;
+  <a href="https://github.com/NHacker7/OnGround.ai"><strong>GitHub Repository</strong></a>
+</p>
 
 ## Overview
 
 OnGround.ai brings essential call centre workflows into one interface, including call planning, missed-call follow-ups, call history, lead prioritization, scheduling, and team collaboration through Pulse.
 
-The application includes an interactive dashboard, lead management interface, calling controls, and an AI-oriented workspace. It supports local demonstration data so the user interface and workflows can be explored during development and presentation.
+The application includes an interactive dashboard, lead management interface, calling controls, and an AI-oriented workspace. The calling workflow also demonstrates AI voice playback through the laptop speakers.
+
+**Live application:** https://ongroundai-zeta.vercel.app/
 
 ## Features
 
 ### 1. Dashboard
-- Overview of call centre performance using KPI cards.
+- Key performance indicator (KPI) cards.
 - Call activity and progress indicators.
 - Waiting leads and pending tasks.
 - Monthly earnings summary.
-- Seven-day call activity and CSAT charts.
+- Seven-day call activity and customer satisfaction (CSAT) charts.
 
 ### 2. Calls to Make
-- Prioritized list of leads to contact.
+- Prioritized lead list.
 - Lead information and score indicators.
 - Expandable lead rows.
 - Pagination for navigating leads.
 
 ### 3. Incoming Calls
-- View missed and incoming call records.
-- Display potential value associated with missed calls.
+- Missed and incoming call records.
+- Potential value associated with missed calls.
 - Callback actions for individual records.
 
 ### 4. Recent Calls
@@ -44,8 +52,8 @@ The application includes an interactive dashboard, lead management interface, ca
 - Kudos section for recognizing team contributions.
 
 ### 7. Pulse Channels
-- Channel-specific conversation view.
-- Pinned tasks and requests requiring input.
+- Channel-specific conversations.
+- Pinned requests requiring input.
 - Confirm and Reschedule actions.
 - Message composer, timestamps, and distinct message bubbles.
 
@@ -56,46 +64,50 @@ The application includes an interactive dashboard, lead management interface, ca
 - Previous/next lead navigation.
 - Lead-related alerts and contextual information.
 
+### 9. AI Voice Demonstration
+- AI voice playback through the laptop speakers during the calling workflow.
+- Spoken AI output as part of the calling demonstration.
+
+The live website demonstrates the deployed application interface. Features dependent on backend services, credentials, or live telephony may require additional configuration and testing.
+
 ## Technology Stack
 
 | Technology | Purpose |
 |---|---|
 | React | Builds the interactive, component-based user interface. |
 | TypeScript | Adds static typing to improve code reliability and maintainability. |
-| Vite | Provides a fast development server and frontend build process. |
+| Vite | Provides frontend development and build tooling. |
 | Tailwind CSS | Supports consistent styling and responsive layouts. |
-| Node.js | Runs the server-side JavaScript/TypeScript environment. |
-| Express | Handles backend HTTP routes and API endpoints, where configured. |
-| LiveKit / WebRTC | Real browser-to-browser voice calling and interactive voice sessions. |
-| Local mock data | Supports demonstrations and testing without requiring a production database. |
-| Web Audio API | Supports browser-generated audio for simulated calling experiences. |
-| Twilio integration | Provides an optional architecture for real telephone calls when valid credentials and required configuration are available. |
-| OpenAI API integration | Optional AI response generation where configured. |
+| Node.js | Provides the server-side JavaScript runtime. |
+| Express | Handles backend routes and API endpoints, where configured. |
+| Local mock data | Supports demonstrations without requiring a production database. |
+| Browser audio APIs | Support audio playback in the browser, where implemented. |
+| Twilio | Optional telephony integration when configured with valid credentials. |
+| OpenAI API | Optional AI response generation if implemented and configured. |
+| Vercel | Hosts the deployed frontend and provides a public website URL. |
 
 ### Why This Stack?
 
-- **React** makes it easier to build reusable UI components and interactive screens.
-- **TypeScript** helps catch common programming errors and makes a growing application easier to maintain.
-- **Vite** simplifies frontend development and provides fast builds.
-- **Tailwind CSS** makes it easier to maintain a consistent design across all eight screens.
-- **Node.js and Express** provide a way to implement server-side endpoints and integrate external services.
-- **LiveKit / WebRTC** enables zero-cost real-time audio rooms directly between browser clients.
-- **Local mock data** allows the application to be demonstrated without depending on live customer records or paid services.
+- **React:** Enables reusable components and interactive screens.
+- **TypeScript:** Helps catch programming errors and improves maintainability.
+- **Vite:** Provides a fast development workflow and optimized frontend builds.
+- **Tailwind CSS:** Makes consistent styling and responsive design easier.
+- **Node.js and Express:** Support backend endpoints and external integrations.
+- **Local mock data:** Allows the application to be demonstrated without depending on live customer records.
+- **Vercel:** Makes the frontend accessible through a public deployment URL.
 
-## Getting Started
+The exact technologies used for AI speech generation, speech recognition, and audio playback depend on the implemented code and configuration.
+
+## Getting Started Locally
 
 ### Prerequisites
 
-Install the following software:
-
-- [Node.js](https://nodejs.org/) — preferably the version supported by the project's dependencies.
+- [Node.js](https://nodejs.org/)
 - npm, included with Node.js.
-- [Git](https://git-scm.com/) to clone the repository.
-- A code editor such as Visual Studio Code or an IDE such as Google Antigravity.
+- [Git](https://git-scm.com/)
+- A code editor such as Visual Studio Code or Google Antigravity.
 
 ### 1. Clone the repository
-
-Open a terminal and run:
 
 ```bash
 git clone https://github.com/NHacker7/OnGround.ai.git
@@ -104,151 +116,113 @@ cd OnGround.ai
 
 ### 2. Install dependencies
 
-From the project root, run:
-
 ```bash
 npm install
 ```
 
-If the frontend and backend use separate `package.json` files, install dependencies in each directory as well.
+If the frontend and backend use separate `package.json` files, install their dependencies in the relevant directories too.
 
 ### 3. Configure environment variables
 
-Check the project's environment example files and documentation. If the relevant integrations are needed, create the required local environment file without committing it to GitHub.
+Check the project's environment example files and source code for the required variables.
 
-Possible configuration variables include:
+Possible variables for optional integrations include:
 
 ```env
-# Server Configuration
-PORT=3001
-VITE_API_URL=http://localhost:3001
-
-# LiveKit WebRTC Calling (Free Tier / Local Gateway)
-LIVEKIT_URL=
-LIVEKIT_API_KEY=
-LIVEKIT_API_SECRET=
-
-# Twilio PSTN Telephony Adapter (Optional)
 TWILIO_ACCOUNT_SID=
 TWILIO_AUTH_TOKEN=
 TWILIO_PHONE_NUMBER=
 AGENT_PHONE_NUMBER=
-TWILIO_WEBHOOK_BASE_URL=
-
-# Conversational AI Intelligence (Optional)
 OPENAI_API_KEY=
 ```
 
-These variables are optional only where the application code supports operating without them. Use the exact variable names expected by the current code.
+These are examples only. Use the exact variables required by the implementation.
 
-**Security:** Never commit actual credentials, API keys, passwords, or populated `.env` files to the repository.
+Never commit populated `.env` files, API keys, passwords, or authentication tokens to GitHub.
 
 ### 4. Run the application
 
-Inspect `package.json` for the scripts provided by the project.
-
-For running both frontend and backend concurrently:
+For a standard Vite frontend, the development command is usually:
 
 ```bash
 npm run dev
 ```
 
-Or run frontend and backend independently:
+If the backend runs separately, start it using the script defined in its `package.json`.
 
-```bash
-# Terminal 1: Backend Express Server
-npm run dev:backend
-
-# Terminal 2: Frontend Vite App
-npm run dev:frontend
-```
-
-Vite will print the local development URL in the terminal, commonly `http://localhost:5173`.
+Check the project's actual scripts if these commands differ.
 
 ### 5. Build the application
 
-Run the available build scripts from the project root:
-
-```bash
-npm run build:frontend
-npm run build:backend
-```
-
-Or build both together:
+Run the build commands configured in the project's `package.json` files. For a standard Vite frontend, this is commonly:
 
 ```bash
 npm run build
 ```
 
-These commands should be used if they are defined in the project's `package.json`. If not, use the build scripts actually provided by the repository.
-
 ## Implementation Status
 
-### Completed features
+### Completed / Demonstrated
 
 - Dashboard with KPI cards, progress information, tasks, earnings, and seven-day charts.
-- Calls to Make interface with ranked leads and pagination.
+- Calls to Make interface with prioritized leads and pagination.
 - Incoming and missed-call interface with callback actions.
 - Recent call history and call details.
-- Calendar month navigation and event indicators.
-- Pulse home with AvaniBot, role agents, task agents, channels, and Kudos.
-- Pulse channel view with pinned requests, conversation messages, and a reply composer.
-- Leads modal with ICP and lead intent scores, expandable buying signals, and lead navigation.
-- Consistent forest-green sidebar, light content surfaces, and restrained purple accents.
-- Local demonstration data for supported workflows.
+- Calendar month view and navigation.
+- Pulse workspace with AvaniBot, agents, channels, and Kudos.
+- Pulse channel view with pinned requests and a message composer.
+- Leads modal with ICP and lead intent scores, expandable sections, and lead navigation.
+- AI voice playback through the laptop speakers during the calling workflow.
+- Public frontend deployment on Vercel.
 
-*The items above describe the implemented application scope. Verify the current repository before treating every interaction as fully tested.*
+### Skipped, Optional, or Limited
 
-### Skipped, optional, or limited features
+- **Live telephone calls:** Require a configured telephony provider and successful connection testing.
+- **Recipient-side AI audio:** Must be verified separately from laptop speaker playback.
+- **Production AI conversations:** Depend on the actual AI integration and configuration.
+- **Speech recognition and two-way conversation:** Should only be considered complete if microphone input is processed and the AI responds to the user's speech.
+- **Production database:** Persistent multi-user storage is not assumed unless implemented.
+- **Production authentication:** Secure user accounts and role-based access require separate verification.
+- **Backend deployment:** Must be configured separately if the frontend depends on a continuously running backend that is not hosted by the current deployment.
 
-- **Live telephone calling:** Requires valid telephony provider credentials and the appropriate configuration. Without these, calling may operate in simulation mode.
-- **Production AI voice conversations:** Depend on the configured AI integration and, where applicable, telephony setup.
-- **Production database and authentication:** A production-ready database, persistent multi-user accounts, and deployment security are not assumed by this README.
-- **Real customer and lead data:** Demonstration records and scores must not be interpreted as verified customer information or actual AI assessments.
-- **External integrations:** Features that require credentials or third-party services may be unavailable until configured.
-
-These limitations should be updated if the corresponding features are implemented and verified.
+These limitations should be updated as additional features are implemented and verified.
 
 ## AI Tools Used
 
 ### Google Antigravity
-Used as an AI-assisted development environment to help inspect the project, implement application features, refine the interface, and assist with debugging and build checks.
+Used as an AI-assisted development environment to help implement features, refine the interface, inspect code, and assist with debugging.
 
 ### ChatGPT
-Used as a development assistant to help plan application features, refine UI requirements, prepare implementation prompts, troubleshoot issues, and document the project.
+Used for feature planning, implementation guidance, troubleshooting, UI refinement, and documentation.
 
 ### OpenAI API — Optional Runtime Integration
-The application architecture may use an OpenAI API integration for AI-generated responses when configured. This is separate from using ChatGPT during development. API availability and costs depend on the account, model, and configuration.
-
-## Project Structure
-
-The application includes a React/TypeScript frontend and a server-side component. The exact structure should be confirmed from the repository.
-
-Typical responsibilities include:
-
-- `src/` — frontend pages, components, application state, and services.
-- `server/` — backend routes and integrations, where present.
-- `public/` — static assets, where present.
-- `package.json` — project dependencies and scripts.
-- `.env.example` — placeholder environment configuration, if included.
+An OpenAI API integration may support application-level AI responses if implemented and configured. Using ChatGPT during development is separate from integrating an AI API into the running application.
 
 ## Future Improvements
 
-- Integrate a production database for persistent lead and call records.
-- Add secure authentication and role-based access control.
-- Complete and validate real telephony integration.
-- Improve AI voice workflows and human handoff.
-- Add automated tests for key user interactions.
-- Add production deployment, monitoring, and error reporting.
+- Complete and validate live telephony integration.
+- Verify AI audio delivery to the intended call recipient.
+- Improve speech recognition and conversational voice workflows where required.
+- Add a production database for persistent call and lead records.
+- Implement secure authentication and role-based access control.
+- Add automated tests for important interactions.
+- Configure backend hosting and monitoring where required.
+
+## Security
+
+- Never commit API keys, passwords, authentication tokens, or populated `.env` files.
+- Store secrets in environment variables or an appropriate secrets manager.
+- Use mock data for demonstrations unless real customer data is explicitly authorized and securely managed.
 
 ## Disclaimer
 
-OnGround.ai is a development project and demonstration application. Features that depend on third-party APIs, credentials, or live telephony must be configured and tested separately. Simulated calls, sample data, and placeholder scores are not evidence of live calls or verified customer assessments.
+OnGround.ai is a development and demonstration application. Features that depend on external APIs, credentials, or live telephony must be configured and tested separately. Demonstration audio, mock records, and sample lead scores should not be interpreted as proof of a live telephone connection or verified customer assessments.
+
+## Links
+
+- **Live Demo:** https://ongroundai-zeta.vercel.app/
+- **GitHub Repository:** https://github.com/NHacker7/OnGround.ai
 
 ## License
 
-No license has been specified yet. Unless a license is added to this repository, all rights remain with the copyright holder.
-
----
-
-**Repository:** https://github.com/NHacker7/OnGround.ai
+No license has been specified. Unless a license is added to the repository, all rights remain with the copyright holder.
