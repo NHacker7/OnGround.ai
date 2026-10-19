@@ -1,238 +1,254 @@
-# On-Ground.ai Enterprise Call Center Platform & Voice AI Hub
+# OnGround.ai — AI-Powered Call Centre
 
-> A high-performance, peaceful enterprise call center application built with **React 18**, **Vite**, **TypeScript**, **Tailwind CSS**, **Recharts**, **Lucide React**, **Node.js/Express**, and **Twilio Voice API**.
+An AI-assisted call centre application designed to help teams manage customer calls, organize leads, track follow-ups, and collaborate through a unified workspace.
 
----
+## Overview
 
-## 🌟 Overview
+OnGround.ai brings essential call centre workflows into one interface, including call planning, missed-call follow-ups, call history, lead prioritization, scheduling, and team collaboration through Pulse.
 
-**On-Ground.ai** is an enterprise-grade call center console and AI intelligence hub engineered for high-velocity inside sales, SDRs, and customer support teams. Designed according to strict enterprise design principles:
-- **Forest-Green Sidebar** (`#0f261d`) with active shift monitoring and carrier connectivity status.
-- **Warm Ivory Background** (`#faf8f3`) for eye comfort during long calling shifts.
-- **White Cards** with crisp, subtle borders and soft shadows.
-- **Muted Sage-Green Accents** (`#2d6046`) and **Soft Gold Highlights** (`#b88628`).
-- **Restrained Typography & Layouts** powered by Plus Jakarta Sans.
+The application includes an interactive dashboard, lead management interface, calling controls, and an AI-oriented workspace. It supports local demonstration data so the user interface and workflows can be explored during development and presentation.
 
----
+## Features
 
-## 🚀 Key Features Across All 8 Screens
+### 1. Dashboard
+- Overview of call centre performance using KPI cards.
+- Call activity and progress indicators.
+- Waiting leads and pending tasks.
+- Monthly earnings summary.
+- Seven-day call activity and CSAT charts.
 
-### 1. Dashboard (`/`)
-- **KPI Metrics**: Real-time stats for Calls Completed (vs daily quota), Connection & Qualified Rate, Today's Accrued Commission, and Average Call Duration.
-- **7-Day Visual Performance**: Recharts Area & Line visualizations tracking daily dials, connects, and qualified leads.
-- **Today's Action Tasks**: Prioritized actionable task list. **Clicking any task opens the comprehensive Lead Details Modal**.
-- **Pending Follow-Ups**: High-intent prospects with scheduled callbacks and one-click "Call Now" buttons.
-- **Live Activity Stream**: Real-time feed of logged calls, CRM synchronizations, and AI transcriptions.
+### 2. Calls to Make
+- Prioritized list of leads to contact.
+- Lead information and score indicators.
+- Expandable lead rows.
+- Pagination for navigating leads.
 
-### 2. Calls to Make (`/calls`)
-- **Prioritized Customer Leads**: Ordered by urgency, ICP fit, and buying intent.
-- **Interactive Controls**:
-  - Full-text search by customer name, company, phone, or solution tags.
-  - Filtering by Status (`New`, `In Progress`, `Scheduled`, `Contacted`, `Follow-Up`) and Priority (`Urgent`, `High`, `Medium`).
-  - Multi-column sorting (Priority, Contract Value, ICP Score, Customer Name).
-  - Configurable pagination with previous/next controls.
-  - Expandable rows revealing deal notes, recent touchpoints, and buying signals.
-- **One-Click Calling Action**: Green "Call" button directly initiates the calling workflow.
+### 3. Incoming Calls
+- View missed and incoming call records.
+- Display potential value associated with missed calls.
+- Callback actions for individual records.
 
-### 3. Incoming Calls (`/incoming`)
-- **Missed Calls & Inbound Stream**: Shows missed calls, inbound callback requests, caller company, time elapsed, and potential contract value.
-- **AI Transcribed Voicemail Preview**: Voicemail duration, audio playback simulation bar, and full transcript.
-- **Callback Workflow**: Clicking "Callback Now" immediately launches the calling console to dial that contact.
+### 4. Recent Calls
+- Call history with call type, time, and duration.
+- Selectable call records for reviewing details.
 
-### 4. Recent Calls (`/recent`)
-- **Complete Call History Log**: Direction (outbound, inbound), timestamp, exact call duration, outcome disposition, and linked lead.
-- **AI Sentiment Analysis**: Positive, Neutral, Hesitant badges evaluated against speech transcripts.
-- **Audio Recording Playback**: Play/pause audio controls for archived call recordings.
-- **Direct Redial**: One-click redialing action.
+### 5. Calendar
+- Monthly calendar view.
+- Event indicators on relevant dates.
+- Today shortcut and previous/next month navigation.
 
-### 5. Calendar (`/calendar`)
-- **Monthly Interactive Calendar**: Month/year switcher, "Today" quick jump, and event indicator dots.
-- **Date Selection**: Clicking any day updates the Selected Day Schedule sidebar.
-- **Schedule Follow-Up Modal**: Fully functional form to book new follow-up calls and demos.
-- **Direct Calling**: Launch calls directly from scheduled calendar appointments.
+### 6. Pulse Workspace
+- AvaniBot assistant interface.
+- Role-based and task-oriented agent sections.
+- Team channels and discussions.
+- Kudos section for recognizing team contributions.
 
-### 6. Pulse Home (`/pulse`)
-- **AvaniBot Autonomous Assistant**: Central conversational AI intelligence with status indicators, transcription counters, and deal escalation tracking.
-- **Role Agents Grid**:
-  - *Sales Coaching Agent* (objection scripts and pitch pacing)
-  - *Objection Handler* (competitor defense against Talkdesk/Five9)
-  - *Follow-Up Drafter* (instant post-call email recaps)
-  - *Executive Deal Strategist* (discount approval and contract yield optimization)
-- **Task Agents Grid**: Background workers for automated transcription, buying signal detection, and CRM synchronization.
-- **Pulse Team Channels List**: Quick navigation into `#urgent-leads`, `#deal-desk`, `#coaching-and-scripts`, and `#product-feedback`.
-- **Team Kudos & Wins**: Feed of peer recognitions and closed deals.
+### 7. Pulse Channels
+- Channel-specific conversation view.
+- Pinned tasks and requests requiring input.
+- Confirm and Reschedule actions.
+- Message composer, timestamps, and distinct message bubbles.
 
-### 7. Pulse Channel (`/pulse/channel/:id`)
-- **Channel Header**: Topic, member count, and back navigation to Pulse Home.
-- **Pinned "Needs Your Input" Card**:
-  - Displays high-stakes actionable items (e.g. 15% discount approval for Apex Global or callback escalations).
-  - **Two Functional Interactive Buttons**: e.g., "Approve 15% Discount" or "Counter with 10% + Credit". Clicking either updates state and logs the signed action directly into the conversation!
-- **Real-Time Messaging**: Left/right chat bubbles, sender roles, timestamps, quick prompt suggestions, and live AI response from AvaniBot.
+### 8. Leads Modal
+- Customer and lead information.
+- Ideal Customer Profile (ICP) score and lead intent score.
+- Expandable ICP breakdown and buying-signal sections.
+- Previous/next lead navigation.
+- Lead-related alerts and contextual information.
 
-### 8. Lead Details Modal
-- **Dossier & Company Metrics**: Annual revenue, company size, location, direct phone, and email.
-- **Visual Score Gauges**: Ideal Customer Profile (ICP) fit meter and Buying Intent velocity meter.
-- **Expandable Buying Signals**: Real-time signals (pricing page visits, whitepaper downloads, security audit requests) with click-to-expand details.
-- **Contact History Timeline**: Chronological trail of calls, emails, and meetings.
-- **Previous / Next Navigation**: Convenient `< Prev` and `Next >` buttons to cycle through leads without closing the modal.
-- **Direct Calling**: One-click "Call Lead Now" button.
+## Technology Stack
 
----
+| Technology | Purpose |
+|---|---|
+| React | Builds the interactive, component-based user interface. |
+| TypeScript | Adds static typing to improve code reliability and maintainability. |
+| Vite | Provides a fast development server and frontend build process. |
+| Tailwind CSS | Supports consistent styling and responsive layouts. |
+| Node.js | Runs the server-side JavaScript/TypeScript environment. |
+| Express | Handles backend HTTP routes and API endpoints, where configured. |
+| LiveKit / WebRTC | Real browser-to-browser voice calling and interactive voice sessions. |
+| Local mock data | Supports demonstrations and testing without requiring a production database. |
+| Web Audio API | Supports browser-generated audio for simulated calling experiences. |
+| Twilio integration | Provides an optional architecture for real telephone calls when valid credentials and required configuration are available. |
+| OpenAI API integration | Optional AI response generation where configured. |
 
-## 📞 Calling Architecture & Telephony Integration
+### Why This Stack?
 
-The platform provides a dual-layer calling engine:
+- **React** makes it easier to build reusable UI components and interactive screens.
+- **TypeScript** helps catch common programming errors and makes a growing application easier to maintain.
+- **Vite** simplifies frontend development and provides fast builds.
+- **Tailwind CSS** makes it easier to maintain a consistent design across all eight screens.
+- **Node.js and Express** provide a way to implement server-side endpoints and integrate external services.
+- **LiveKit / WebRTC** enables zero-cost real-time audio rooms directly between browser clients.
+- **Local mock data** allows the application to be demonstrated without depending on live customer records or paid services.
 
-```
-                  ┌───────────────────────────────┐
-                  │    On-Ground.ai Client UI     │
-                  │  (CallingContext + WebAudio)  │
-                  └──────────────┬────────────────┘
-                                 │ HTTP POST /api/calls/initiate
-                                 ▼
-                  ┌───────────────────────────────┐
-                  │     Express Backend Server    │
-                  │      (server/server.ts)       │
-                  └──────────────┬────────────────┘
-                                 │
-         ┌───────────────────────┴───────────────────────┐
-         ▼                                               ▼
-[ Twilio Configured ]                           [ Unconfigured / Local ]
-Twilio Programmable Voice REST Client            High-Fidelity Web Audio Synthesizer
-- Outbound Call Bridging (Agent ⮂ Customer)     - Real browser Web Audio Context
-- Polly.Neural Speech Voice Prompts             - DTMF Dial Tones (697Hz-1477Hz)
-- Live TwiML Webhook Serving                    - US Standard Ringback (440Hz + 480Hz)
-- Real Call SID & Status Callbacks              - Real User Microphone Input
-                                                - Dynamic Audio Waveform Canvas
-```
-
-### 1. Real Twilio Telephony (Human-to-Human Bridging)
-When Twilio credentials are configured in `.env`:
-1. Clicking "Call Lead" dispatches a request to `/api/calls/initiate`.
-2. The server uses the official Twilio SDK to dial the agent's verified phone number.
-3. When the agent answers, Twilio executes the bridge TwiML at `/api/calls/twiml/bridge`, greeting the agent and immediately dialing the customer lead.
-4. Twilio status webhooks (`/api/calls/status-webhook`) report ringing, answered, and completed timestamps.
-
-### 2. High-Fidelity Audio Simulation Mode
-If running without Twilio credentials or without purchased phone numbers:
-- The backend automatically switches to simulation mode with clear status reporting.
-- The client-side `soundSynthesizer.ts` creates authentic telephone tones via the browser's `AudioContext`.
-- Users can press numbers on the interactive DTMF keypad and hear authentic dual-frequency tones.
-- Real microphone input is captured via `navigator.mediaDevices.getUserMedia` to drive the audio waveform bars in real time.
-- Call duration, disposition selection, and notes are logged to the backend store and added to Recent Calls.
-
----
-
-## 🛠️ Technology Stack
-
-| Layer | Technologies | Rationale |
-|---|---|---|
-| **Frontend Framework** | React 18, Vite 6, TypeScript | Instant HMR, type safety, optimal runtime performance |
-| **Styling** | Tailwind CSS 3 | Utility-first architecture with custom forest green, sage, warm ivory, and soft gold design tokens |
-| **Icons & Visuals** | Lucide React | Modern, lightweight, clean iconography |
-| **Charts** | Recharts 2 | Responsive SVG Area, Bar, and Line charts |
-| **Backend** | Node.js, Express 4, TypeScript | Lightweight, fast REST API for telephony security |
-| **Telephony** | Twilio Voice SDK, TwiML, Web Audio API | Official Twilio Programmable Voice integration with client audio fallback |
-
----
-
-## ⚙️ Installation & Run Instructions
+## Getting Started
 
 ### Prerequisites
-- Node.js (v18.0.0 or higher, tested on Node v24.20.0)
-- npm (v9.0.0 or higher)
 
-### 1. Clone & Install
+Install the following software:
+
+- [Node.js](https://nodejs.org/) — preferably the version supported by the project's dependencies.
+- npm, included with Node.js.
+- [Git](https://git-scm.com/) to clone the repository.
+- A code editor such as Visual Studio Code or an IDE such as Google Antigravity.
+
+### 1. Clone the repository
+
+Open a terminal and run:
+
 ```bash
-cd c:\Projects\callcenterapp
+git clone https://github.com/NHacker7/OnGround.ai.git
+cd OnGround.ai
+```
+
+### 2. Install dependencies
+
+From the project root, run:
+
+```bash
 npm install
 ```
 
-### 2. Configure Environment Variables
-Copy `.env.example` to `.env`:
-```bash
-cp .env.example .env
-```
+If the frontend and backend use separate `package.json` files, install dependencies in each directory as well.
 
-To enable real human-to-human calling via Twilio, supply your credentials in `.env`:
+### 3. Configure environment variables
+
+Check the project's environment example files and documentation. If the relevant integrations are needed, create the required local environment file without committing it to GitHub.
+
+Possible configuration variables include:
+
 ```env
+# Server Configuration
 PORT=3001
 VITE_API_URL=http://localhost:3001
 
-TWILIO_ACCOUNT_SID=ACXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-TWILIO_AUTH_TOKEN=your_auth_token_here
-TWILIO_PHONE_NUMBER=+12025550199
-AGENT_PHONE_NUMBER=+1YOUR_MOBILE_NUMBER
-TWILIO_WEBHOOK_BASE_URL=https://your-public-url.ngrok-free.app
-```
-*(If left blank, the application automatically runs in High-Fidelity Audio Synthesizer mode with zero setup required).*
+# LiveKit WebRTC Calling (Free Tier / Local Gateway)
+LIVEKIT_URL=
+LIVEKIT_API_KEY=
+LIVEKIT_API_SECRET=
 
-### 3. Run Development Server
-To run both the backend Express server and Vite frontend simultaneously:
+# Twilio PSTN Telephony Adapter (Optional)
+TWILIO_ACCOUNT_SID=
+TWILIO_AUTH_TOKEN=
+TWILIO_PHONE_NUMBER=
+AGENT_PHONE_NUMBER=
+TWILIO_WEBHOOK_BASE_URL=
+
+# Conversational AI Intelligence (Optional)
+OPENAI_API_KEY=
+```
+
+These variables are optional only where the application code supports operating without them. Use the exact variable names expected by the current code.
+
+**Security:** Never commit actual credentials, API keys, passwords, or populated `.env` files to the repository.
+
+### 4. Run the application
+
+Inspect `package.json` for the scripts provided by the project.
+
+For running both frontend and backend concurrently:
+
 ```bash
 npm run dev
 ```
-Or run separately:
+
+Or run frontend and backend independently:
+
 ```bash
-# Terminal 1: Backend Server (Port 3001)
+# Terminal 1: Backend Express Server
 npm run dev:backend
 
-# Terminal 2: Frontend App (Port 5173)
+# Terminal 2: Frontend Vite App
 npm run dev:frontend
 ```
 
-Open your browser to: **`http://localhost:5173/`**
+Vite will print the local development URL in the terminal, commonly `http://localhost:5173`.
 
-### 4. Build for Production
+### 5. Build the application
+
+Run the available build scripts from the project root:
+
+```bash
+npm run build:frontend
+npm run build:backend
+```
+
+Or build both together:
+
 ```bash
 npm run build
 ```
-This builds the client assets to `dist/` and compiles the backend server to `dist-server/`.
+
+These commands should be used if they are defined in the project's `package.json`. If not, use the build scripts actually provided by the repository.
+
+## Implementation Status
+
+### Completed features
+
+- Dashboard with KPI cards, progress information, tasks, earnings, and seven-day charts.
+- Calls to Make interface with ranked leads and pagination.
+- Incoming and missed-call interface with callback actions.
+- Recent call history and call details.
+- Calendar month navigation and event indicators.
+- Pulse home with AvaniBot, role agents, task agents, channels, and Kudos.
+- Pulse channel view with pinned requests, conversation messages, and a reply composer.
+- Leads modal with ICP and lead intent scores, expandable buying signals, and lead navigation.
+- Consistent forest-green sidebar, light content surfaces, and restrained purple accents.
+- Local demonstration data for supported workflows.
+
+*The items above describe the implemented application scope. Verify the current repository before treating every interaction as fully tested.*
+
+### Skipped, optional, or limited features
+
+- **Live telephone calling:** Requires valid telephony provider credentials and the appropriate configuration. Without these, calling may operate in simulation mode.
+- **Production AI voice conversations:** Depend on the configured AI integration and, where applicable, telephony setup.
+- **Production database and authentication:** A production-ready database, persistent multi-user accounts, and deployment security are not assumed by this README.
+- **Real customer and lead data:** Demonstration records and scores must not be interpreted as verified customer information or actual AI assessments.
+- **External integrations:** Features that require credentials or third-party services may be unavailable until configured.
+
+These limitations should be updated if the corresponding features are implemented and verified.
+
+## AI Tools Used
+
+### Google Antigravity
+Used as an AI-assisted development environment to help inspect the project, implement application features, refine the interface, and assist with debugging and build checks.
+
+### ChatGPT
+Used as a development assistant to help plan application features, refine UI requirements, prepare implementation prompts, troubleshoot issues, and document the project.
+
+### OpenAI API — Optional Runtime Integration
+The application architecture may use an OpenAI API integration for AI-generated responses when configured. This is separate from using ChatGPT during development. API availability and costs depend on the account, model, and configuration.
+
+## Project Structure
+
+The application includes a React/TypeScript frontend and a server-side component. The exact structure should be confirmed from the repository.
+
+Typical responsibilities include:
+
+- `src/` — frontend pages, components, application state, and services.
+- `server/` — backend routes and integrations, where present.
+- `public/` — static assets, where present.
+- `package.json` — project dependencies and scripts.
+- `.env.example` — placeholder environment configuration, if included.
+
+## Future Improvements
+
+- Integrate a production database for persistent lead and call records.
+- Add secure authentication and role-based access control.
+- Complete and validate real telephony integration.
+- Improve AI voice workflows and human handoff.
+- Add automated tests for key user interactions.
+- Add production deployment, monitoring, and error reporting.
+
+## Disclaimer
+
+OnGround.ai is a development project and demonstration application. Features that depend on third-party APIs, credentials, or live telephony must be configured and tested separately. Simulated calls, sample data, and placeholder scores are not evidence of live calls or verified customer assessments.
+
+## License
+
+No license has been specified yet. Unless a license is added to this repository, all rights remain with the copyright holder.
 
 ---
 
-## 🧪 Testing & Verification Report
-
-| Test Suite | Result | Details |
-|---|---|---|
-| **TypeScript Frontend Build** | ✅ PASS | `tsc -b && vite build` built in 3.14s with 0 errors |
-| **TypeScript Backend Build** | ✅ PASS | `tsc --project tsconfig.server.json` compiled with 0 errors |
-| **API Healthcheck** | ✅ PASS | `GET /api/health` returned HTTP 200 OK |
-| **Telephony Status Endpoint** | ✅ PASS | `GET /api/calls/status` returned provider configuration |
-| **Outbound Call Initiation** | ✅ PASS | `POST /api/calls/initiate` generated call session and SID |
-| **AI Voice Call Dispatch** | ✅ PASS | `POST /api/calls/ai-agent` generated AI voice dispatch |
-| **Twilio TwiML Generation** | ✅ PASS | `GET /api/calls/twiml/bridge` generated valid XML with Polly voice |
-| **Call Logging Endpoint** | ✅ PASS | `POST /api/calls/log` persisted call outcomes and duration |
-| **Vite Backend API Proxy** | ✅ PASS | `http://localhost:5173/api/health` proxied to port 3001 |
-
----
-
-## 🎬 2-Minute Demo Script
-
-- **[0:00 - 0:20] Executive Dashboard**:
-  Showcase the warm ivory and forest-green aesthetic. Highlight KPI progress bars (quota pace, connection rate, commission ticker) and the 7-day Recharts volume trends.
-- **[0:20 - 0:40] Task to Lead Dossier Flow**:
-  Click on the top task ("Urgent callback to Marcus Vance"). Point out how the Lead Details Modal opens instantly, displaying the 96/100 ICP score, expandable buying signals, and contact history. Click `Next >` to navigate directly between leads.
-- **[0:40 - 1:05] Live Calling Console**:
-  Click "Call Lead Now" from the modal. Observe the active call console opening: dialing state, ringing state with ringback tone, connected state with real-time waveform animation. Demonstrate the interactive DTMF keypad beeps, mute toggle, and hang up. Choose the "Connected & Qualified" disposition and save the call.
-- **[1:05 - 1:20] Calls to Make & Filters**:
-  Switch to the "Calls to Make" tab. Demonstrate the real-time search bar, priority filter dropdown, sorting by deal value, and row expander displaying deal notes.
-- **[1:20 - 1:35] Incoming Calls & Voicemail**:
-  Navigate to "Incoming". Highlight the urgent missed call from Marcus Vance ($48,000 ARR). Click "Play Audio Recording" on the transcribed voicemail, then click "Callback Now" to initiate an instant return call.
-- **[1:35 - 1:50] Calendar & Scheduling**:
-  Switch to "Calendar". Browse October 2026 dates with event indicator dots. Select a date to reveal the scheduled meetings. Click "Schedule New Call" and book a new appointment.
-- **[1:50 - 2:00] Pulse AI Intelligence Hub & Channels**:
-  Navigate to "Pulse Intelligence". Review the 4 Role Agents (Coaching, Objections, Follow-up, Deal Desk). Enter `#urgent-leads`. Point out the pinned "Needs your input" card. Click "Call Marcus Back Now" to execute the deal action, post into chat, and prompt AvaniBot.
-
----
-
-## 🔒 Security & Best Practices
-
-- **Zero Secret Leakage**: Credentials are read solely via `process.env` on the Node.js backend. No API keys or tokens are bundled into client code.
-- **Rate-Limiting & Validation**: All endpoints validate phone numbers and request payloads.
-- **Audio Privacy**: Call recordings and simulated transcripts simulate AES-256 encrypted storage.
-
----
-
-## 🤖 AI Tools Used
-Developed using Gemini 3.8 Flash (High) via Antigravity Agentic Pair Programming.
+**Repository:** https://github.com/NHacker7/OnGround.ai
