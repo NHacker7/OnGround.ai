@@ -10,6 +10,7 @@ import { RecentCalls } from './pages/RecentCalls';
 import { CalendarView } from './pages/CalendarView';
 import { PulseHome } from './pages/PulseHome';
 import { PulseChannel } from './pages/PulseChannel';
+import { ProfileSettings } from './pages/ProfileSettings';
 
 const ScreenRouter: React.FC = () => {
   const { activeScreen } = useApp();
@@ -29,6 +30,8 @@ const ScreenRouter: React.FC = () => {
       return <PulseHome />;
     case 'pulse-channel':
       return <PulseChannel />;
+    case 'profile':
+      return <ProfileSettings />;
     default:
       return <Dashboard />;
   }

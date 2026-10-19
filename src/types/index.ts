@@ -5,7 +5,21 @@ export type ScreenId =
   | 'recent'
   | 'calendar'
   | 'pulse'
-  | 'pulse-channel';
+  | 'pulse-channel'
+  | 'profile';
+
+export interface UserProfile {
+  name: string;
+  email: string;
+  phone: string;
+  title: string;
+  department: string;
+  dateOfBirth: string; // YYYY-MM-DD
+  avatar: string;
+  bio?: string;
+  timeZone?: string;
+  directExtension?: string;
+}
 
 export interface BuyingSignal {
   id: string;

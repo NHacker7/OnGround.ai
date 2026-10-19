@@ -40,8 +40,10 @@ const CHART_DATA_7_DAYS = [
 ];
 
 export const Dashboard: React.FC = () => {
-  const { kpis, tasks, leads, openLeadModal, toggleTaskComplete, setActiveScreen } = useApp();
+  const { kpis, tasks, leads, openLeadModal, toggleTaskComplete, setActiveScreen, userProfile } = useApp();
   const { startCall } = useCalling();
+
+  const firstName = userProfile?.name ? userProfile.name.trim().split(' ')[0] : 'Alex';
 
   const formatCurrency = (val: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -61,7 +63,7 @@ export const Dashboard: React.FC = () => {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold text-charcoal tracking-tight">
-              Good morning, Alex 👋
+              Good morning, {firstName} 👋
             </h1>
             <Badge variant="sage" size="sm">
               Shift Active

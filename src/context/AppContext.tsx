@@ -8,6 +8,7 @@ import {
   PulseChannelData,
   DashboardTask,
   KPIStats,
+  UserProfile,
 } from '../types';
 import {
   INITIAL_LEADS,
@@ -19,11 +20,26 @@ import {
   INITIAL_KPIS,
 } from '../data/initialData';
 
+const DEFAULT_USER_PROFILE: UserProfile = {
+  name: 'Alex Chen',
+  email: 'alex.chen@on-ground.ai',
+  phone: '+1 (415) 555-0143',
+  title: 'Senior Account Executive',
+  department: 'Enterprise Sales & Telephony',
+  dateOfBirth: '1994-06-15',
+  avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+  bio: 'Specializing in enterprise contact center transformation, SIP trunk migration, and real-time AI voice workflows.',
+  timeZone: 'America/Los_Angeles (PST)',
+  directExtension: 'Ext. 4022',
+};
+
 interface AppContextType {
   activeScreen: ScreenId;
   setActiveScreen: (screen: ScreenId) => void;
   activeChannelId: string;
   setActiveChannelId: (channelId: string) => void;
+  userProfile: UserProfile;
+  updateUserProfile: (newProfile: UserProfile) => void;
   leads: Lead[];
   callRecords: CallRecord[];
   incomingCalls: IncomingCall[];
@@ -52,6 +68,26 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [activeScreen, setActiveScreen] = useState<ScreenId>('dashboard');
   const [activeChannelId, setActiveChannelId] = useState<string>('chan-urgent-leads');
+  const [userProfile, setUserProfile] = useState<UserProfile>(() => {
+    try {
+      const saved = localStorage.getItem('onground_user_profile');
+      if (saved) {
+        return { ...DEFAULT_USER_PROFILE, ...JSON.parse(saved) };
+      }
+    } catch (e) {
+      console.warn('Failed to load profile from localStorage', e);
+    }
+    return DEFAULT_USER_PROFILE;
+  });
+
+  const updateUserProfile = (newProfile: UserProfile) => {
+    setUserProfile(newProfile);
+    try {
+      localStorage.setItem('onground_user_profile', JSON.stringify(newProfile));
+    } catch (e) {
+      console.warn('Failed to persist profile to localStorage', e);
+    }
+  };
   const [leads, setLeads] = useState<Lead[]>(INITIAL_LEADS);
   const [callRecords, setCallRecords] = useState<CallRecord[]>(INITIAL_CALL_RECORDS);
   const [incomingCalls, setIncomingCalls] = useState<IncomingCall[]>(INITIAL_INCOMING_CALLS);
@@ -154,9 +190,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     const userMsg = {
       id: `msg-${Date.now()}`,
-      senderName: 'Alex Chen',
-      senderRole: 'Senior Account Executive',
-      senderAvatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+      senderName: userProfile.name,
+      senderRole: userProfile.title,
+      senderAvatar: userProfile.avatar,
       isAi: false,
       isCurrentUser: true,
       timestamp: 'Just now',
@@ -179,6 +215,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     // AI AvaniBot simulated response after 1.2 seconds
     setTimeout(() => {
+      const firstName = userProfile.name.trim().split(' ')[0] || 'Alex';
       const aiReply = {
         id: `ai-msg-${Date.now()}`,
         senderName: 'AvaniBot',
@@ -187,7 +224,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         isAi: true,
         isCurrentUser: false,
         timestamp: 'Just now',
-        content: `Understood, Alex. I have logged "${content.trim()}" into our real-time CRM stream and updated the deal intelligence matrix.`,
+        content: `Understood, ${firstName}. I have logged "${content.trim()}" into our real-time CRM stream and updated the deal intelligence matrix.`,
         badge: 'AI Response',
       };
 
@@ -230,7 +267,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             isAi: true,
             isCurrentUser: false,
             timestamp: 'Just now',
-            content: `⚡ Action Completed by Alex Chen: ${resolution}`,
+            content: `⚡ Action Completed by ${userProfile.name}: ${resolution}`,
             badge: 'Deal Executed',
           };
 
@@ -256,6 +293,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setActiveScreen,
         activeChannelId,
         setActiveChannelId,
+        userProfile,
+        updateUserProfile,
         leads,
         callRecords,
         incomingCalls,

@@ -21,7 +21,7 @@ interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, setMobileOpen }) => {
-  const { activeScreen, setActiveScreen, incomingCalls, pulseChannels } = useApp();
+  const { activeScreen, setActiveScreen, incomingCalls, pulseChannels, userProfile } = useApp();
 
   const totalUnreadIncoming = incomingCalls.filter((c) => c.status === 'pending').length;
   const totalUnreadPulse = pulseChannels.reduce((sum, c) => sum + c.unreadCount, 0);
@@ -129,30 +129,43 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, setMobileOpen }) =
           </nav>
         </div>
 
-        {/* Footer User Profile & System Info */}
-        <div className="p-4 border-t border-forest-border/80 bg-forest-surface/40">
+        {/* Footer User Profile & System Info (Clickable for Profile & Settings) */}
+        <div
+          onClick={() => handleNavClick('profile')}
+          className={`p-3.5 mx-3 mb-3 rounded-2xl border transition-all cursor-pointer group ${
+            activeScreen === 'profile'
+              ? 'bg-forest-hover border-sage text-white shadow-sm ring-1 ring-sage/50'
+              : 'bg-forest-surface/70 border-forest-border/80 hover:bg-forest-hover hover:border-forest-border text-ivory'
+          }`}
+          title="Click to view and edit Profile & Settings"
+        >
           <div className="flex items-center gap-3">
-            <div className="relative">
+            <div className="relative shrink-0">
               <img
-                src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=120&auto=format&fit=crop&q=80"
-                alt="Alex Chen"
-                className="w-10 h-10 rounded-xl object-cover border border-forest-border"
+                src={userProfile.avatar}
+                alt={userProfile.name}
+                className="w-10 h-10 rounded-xl object-cover border border-forest-border shadow-2xs group-hover:scale-105 transition-transform"
               />
-              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-400 border-2 border-forest rounded-full" />
+              <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-400 border-2 border-forest rounded-full" />
             </div>
 
             <div className="flex-1 min-w-0">
-              <h4 className="text-sm font-bold text-white truncate">Alex Chen</h4>
-              <p className="text-[11px] text-gray-400 truncate">Senior Account Executive</p>
+              <h4 className="text-sm font-bold text-white truncate group-hover:text-emerald-200 transition-colors">
+                {userProfile.name}
+              </h4>
+              <p className="text-[11px] text-gray-400 truncate">{userProfile.title}</p>
             </div>
 
-            <button
-              type="button"
-              className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-forest-hover transition-colors"
-              title="Settings"
+            <div
+              className={`p-1.5 rounded-lg transition-colors ${
+                activeScreen === 'profile'
+                  ? 'bg-sage text-white'
+                  : 'text-gray-400 group-hover:text-white group-hover:bg-forest-surface'
+              }`}
+              title="Profile & Settings"
             >
               <Sliders className="w-4 h-4" />
-            </button>
+            </div>
           </div>
         </div>
       </aside>
