@@ -1,8 +1,10 @@
 export type ScreenId =
   | 'dashboard'
+  | 'plan'
   | 'calls'
   | 'incoming'
   | 'recent'
+  | 'practice'
   | 'calendar'
   | 'pulse'
   | 'pulse-channel'
@@ -76,16 +78,23 @@ export interface Lead {
   companySize: string;
   icpScore: number; // 0-100
   intentScore: number; // 0-100
-  potentialValue: number; // in USD
+  potentialValue: number; // in USD or INR
   interests: string[];
   lastContact: string;
   nextActionDeadline: string;
-  status: 'New' | 'In Progress' | 'Scheduled' | 'Contacted' | 'Closed-Won' | 'Follow-Up';
+  status: 'New' | 'In Progress' | 'Scheduled' | 'Contacted' | 'Closed-Won' | 'Follow-Up' | 'OPEN';
   priority: 'High' | 'Medium' | 'Low' | 'Urgent';
   buyingSignals: BuyingSignal[];
   contactHistory: ContactTouchpoint[];
   recommendedActions: RecommendedAction[];
   notes: string;
+  // Visual Reference Screenshot 3 properties:
+  interestedProduct?: string;
+  slaTimeLeft?: string;
+  quoteNotice?: string;
+  cumulativeMissed?: number;
+  icpBreakdown?: { label: string; score: string; detail: string }[];
+  howWeGotHere?: { step: string; timestamp: string; note: string }[];
 }
 
 export interface CallRecord {
@@ -103,6 +112,7 @@ export interface CallRecord {
   audioUrl?: string;
   sentiment: 'Positive' | 'Neutral' | 'Hesitant' | 'Negative';
   transcriptSnippet: string;
+  transportType?: 'webrtc' | 'pstn' | 'simulated';
 }
 
 export interface IncomingCall {
@@ -128,7 +138,13 @@ export interface CalendarEvent {
   phone: string;
   date: string; // YYYY-MM-DD
   time: string;
-  type: 'Follow-Up Call' | 'Platform Demo' | 'Contract Review' | 'Technical Deep-Dive';
+  type:
+    | 'Follow-Up Call'
+    | 'Platform Demo'
+    | 'Contract Review'
+    | 'Technical Deep-Dive'
+    | 'Quote Review'
+    | 'Support Escalation';
   potentialValue: number;
   status: 'Upcoming' | 'Completed' | 'Rescheduled';
   agenda: string;
@@ -165,7 +181,7 @@ export interface PulseChannelData {
   unreadCount: number;
   lastMessage: string;
   lastMessageTime: string;
-  category: 'Urgent' | 'Deals' | 'Coaching' | 'Product';
+  category: 'Urgent' | 'Deals' | 'Coaching' | 'Product' | 'Role Agents' | 'General' | 'Role Agents (run a team)';
   membersCount: number;
   pinnedAction?: PinnedChannelAction;
   messages: ChannelMessage[];

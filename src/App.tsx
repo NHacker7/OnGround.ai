@@ -11,12 +11,14 @@ import { CalendarView } from './pages/CalendarView';
 import { PulseHome } from './pages/PulseHome';
 import { PulseChannel } from './pages/PulseChannel';
 import { ProfileSettings } from './pages/ProfileSettings';
+import { PracticeCall } from './pages/PracticeCall';
 
 const ScreenRouter: React.FC = () => {
   const { activeScreen } = useApp();
 
   switch (activeScreen) {
     case 'dashboard':
+    case 'plan':
       return <Dashboard />;
     case 'calls':
       return <CallsToMake />;
@@ -24,6 +26,8 @@ const ScreenRouter: React.FC = () => {
       return <IncomingCalls />;
     case 'recent':
       return <RecentCalls />;
+    case 'practice':
+      return <PracticeCall />;
     case 'calendar':
       return <CalendarView />;
     case 'pulse':

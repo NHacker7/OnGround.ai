@@ -1,340 +1,330 @@
 import React, { useState } from 'react';
 import {
   X,
-  ChevronLeft,
   ChevronRight,
-  Phone,
-  Mail,
-  MapPin,
-  Building,
-  DollarSign,
-  TrendingUp,
   ChevronDown,
-  ChevronUp,
-  Sparkles,
-  Calendar,
   Clock,
-  ArrowRight,
-  CheckCircle,
+  Phone,
+  Shield,
+  FileText,
+  Users,
+  Sparkles,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useCalling } from '../../context/CallingContext';
-import { Badge } from '../common/Badge';
-import { ScoreMeter } from '../common/ScoreMeter';
 
 export const LeadDetailsModal: React.FC = () => {
-  const { isLeadModalOpen, selectedLead, closeLeadModal, nextLead, prevLead } = useApp();
+  const { isLeadModalOpen, selectedLead, closeLeadModal, nextLead, prevLead, leads, openLeadModal } =
+    useApp();
   const { startCall } = useCalling();
-  const [expandedSignalId, setExpandedSignalId] = useState<string | null>(null);
+
+  const [icpExpanded, setIcpExpanded] = useState(false);
+  const [historyExpanded, setHistoryExpanded] = useState(false);
+  const [signalsExpanded, setSignalsExpanded] = useState(true);
 
   if (!isLeadModalOpen || !selectedLead) return null;
 
-  const toggleSignal = (id: string) => {
-    setExpandedSignalId((prev) => (prev === id ? null : id));
-  };
+  const currentIndex = Math.max(
+    0,
+    leads.findIndex((l) => l.id === selectedLead.id)
+  );
+  const totalLeads = leads.length || 5;
 
-  const handleCallFromModal = () => {
-    startCall({
-      id: selectedLead.id,
-      name: selectedLead.name,
-      company: selectedLead.company,
-      phone: selectedLead.phone,
-    });
-  };
-
-  const formatCurrency = (val: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      maximumFractionDigits: 0,
-    }).format(val);
+  const handleCall = (mode: 'human-agent' | 'voice-ai' = 'voice-ai') => {
+    startCall(
+      {
+        id: selectedLead.id,
+        name: selectedLead.name,
+        company: selectedLead.company,
+        phone: selectedLead.phone,
+      },
+      mode
+    );
   };
 
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center bg-forest-dark/60 backdrop-blur-sm p-4 sm:p-6 overflow-y-auto animate-in fade-in duration-200">
-      <div className="bg-white rounded-3xl border border-ivory-border max-w-3xl w-full shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-        {/* Modal Top Bar */}
-        <div className="px-6 py-4 bg-ivory-subtle border-b border-ivory-border flex items-center justify-between">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-3 overflow-y-auto animate-in fade-in duration-150">
+      <div className="bg-white rounded-3xl border border-stone-200 max-w-md w-full shadow-2xl overflow-hidden flex flex-col max-h-[94vh] animate-in zoom-in-95 duration-150 text-charcoal">
+        {/* 1. Purple Header Bar */}
+        <div className="px-5 py-3.5 bg-gradient-to-r from-[#3b0764] via-[#4c1d95] to-[#3b0764] text-white flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold uppercase tracking-wider text-charcoal-muted">
-              Lead Intelligence File
-            </span>
-            <Badge variant="sage" size="sm">
-              {selectedLead.status}
-            </Badge>
-          </div>
-
-          <div className="flex items-center gap-2">
-            {/* Previous Lead */}
-            <button
-              type="button"
-              onClick={prevLead}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-ivory-border bg-white text-xs font-semibold text-charcoal hover:bg-ivory hover:text-forest transition-colors shadow-sm"
-              title="Previous Lead"
-            >
-              <ChevronLeft className="w-3.5 h-3.5" />
-              <span>Prev</span>
-            </button>
-
-            {/* Next Lead */}
-            <button
-              type="button"
-              onClick={nextLead}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-ivory-border bg-white text-xs font-semibold text-charcoal hover:bg-ivory hover:text-forest transition-colors shadow-sm"
-              title="Next Lead"
-            >
-              <span>Next</span>
-              <ChevronRight className="w-3.5 h-3.5" />
-            </button>
-
-            {/* Close Button */}
-            <button
-              type="button"
-              onClick={closeLeadModal}
-              className="p-1.5 rounded-lg text-charcoal-muted hover:text-charcoal hover:bg-ivory-dark transition-colors ml-2"
-              title="Close Modal"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
-
-        {/* Modal Body */}
-        <div className="p-6 overflow-y-auto space-y-6">
-          {/* Header Profile Section */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-ivory-border">
-            <div className="flex items-center gap-4">
-              <img
-                src={selectedLead.avatar}
-                alt={selectedLead.name}
-                className="w-16 h-16 rounded-2xl object-cover border-2 border-sage-light shadow-sm"
-              />
-              <div>
-                <div className="flex items-center gap-2">
-                  <h2 className="text-2xl font-bold text-charcoal tracking-tight">
-                    {selectedLead.name}
-                  </h2>
-                  <Badge variant={selectedLead.priority === 'Urgent' ? 'urgent' : 'gold'} size="sm">
-                    {selectedLead.priority}
-                  </Badge>
-                </div>
-                <p className="text-sm font-semibold text-charcoal-muted flex items-center gap-1.5 mt-0.5">
-                  <Building className="w-3.5 h-3.5 text-sage" />
-                  {selectedLead.title} • {selectedLead.company}
-                </p>
-                <div className="flex flex-wrap items-center gap-3 mt-2 text-xs text-charcoal-muted">
-                  <span className="flex items-center gap-1 font-mono text-sage-text font-medium">
-                    <Phone className="w-3 h-3 text-sage" />
-                    {selectedLead.phone}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Mail className="w-3 h-3 text-sage" />
-                    {selectedLead.email}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <MapPin className="w-3 h-3 text-sage" />
-                    {selectedLead.location}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Prominent Call Button */}
-            <button
-              type="button"
-              onClick={handleCallFromModal}
-              className="w-full sm:w-auto px-5 py-3 rounded-2xl bg-sage hover:bg-sage-hover text-white font-bold text-sm shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 active:scale-95 group"
-            >
-              <Phone className="w-4 h-4 fill-white group-hover:animate-bounce" />
-              <span>Call Lead Now</span>
-            </button>
-          </div>
-
-          {/* Scores & Deal Metrics Card */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="p-4 rounded-2xl bg-ivory-subtle border border-ivory-border flex flex-col justify-between">
-              <ScoreMeter score={selectedLead.icpScore} label="Ideal Customer Profile (ICP)" />
-              <span className="text-[11px] text-charcoal-muted mt-2">
-                Evaluated against enterprise telephony benchmarks
-              </span>
-            </div>
-
-            <div className="p-4 rounded-2xl bg-ivory-subtle border border-ivory-border flex flex-col justify-between">
-              <ScoreMeter score={selectedLead.intentScore} label="Buying Intent Score" type="intent" />
-              <span className="text-[11px] text-charcoal-muted mt-2">
-                High frequency pricing and doc downloads
-              </span>
-            </div>
-
-            <div className="p-4 rounded-2xl bg-ivory-subtle border border-ivory-border flex flex-col justify-between">
-              <div className="flex items-center justify-between text-xs">
-                <span className="font-medium text-charcoal-muted">Potential Contract Value</span>
-                <span className="p-1 rounded-md bg-gold-light text-gold-text">
-                  <DollarSign className="w-3.5 h-3.5" />
-                </span>
-              </div>
-              <div className="my-1">
-                <span className="text-2xl font-extrabold text-charcoal font-sans">
-                  {formatCurrency(selectedLead.potentialValue)}
-                </span>
-                <span className="text-xs text-charcoal-muted ml-1">ARR</span>
-              </div>
-              <span className="text-[11px] text-charcoal-muted">
-                {selectedLead.companySize} • {selectedLead.annualRevenue}
-              </span>
+            <Users className="w-4 h-4 text-purple-200" />
+            <div>
+              <h2 className="text-sm font-bold tracking-tight text-white leading-tight">Leads</h2>
+              <p className="text-[10px] text-purple-200">
+                Lead {currentIndex + 1} of {totalLeads} · SLA to close
+              </p>
             </div>
           </div>
 
-          {/* Interests & Solution Focus */}
-          <div>
-            <h4 className="text-xs font-bold uppercase tracking-wider text-charcoal-muted mb-2">
-              Solution Focus & Tags
-            </h4>
-            <div className="flex flex-wrap gap-2">
-              {selectedLead.interests.map((tag) => (
-                <span
-                  key={tag}
-                  className="px-3 py-1 rounded-xl text-xs font-semibold bg-white border border-sage-border/80 text-sage-text shadow-2xs"
-                >
-                  #{tag}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          {/* Buying Signals (Expandable / Collapsible) */}
-          <div className="rounded-2xl border border-ivory-border bg-white p-4 shadow-2xs">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-emerald-600" />
-                <h4 className="text-sm font-bold text-charcoal">
-                  High-Velocity Buying Signals ({selectedLead.buyingSignals.length})
-                </h4>
-              </div>
-              <span className="text-xs text-charcoal-muted italic">Click to expand details</span>
-            </div>
-
-            <div className="space-y-2">
-              {selectedLead.buyingSignals.map((signal) => {
-                const isExpanded = expandedSignalId === signal.id;
-                return (
-                  <div
-                    key={signal.id}
-                    className="border border-ivory-border rounded-xl p-3 bg-ivory-subtle/50 hover:bg-ivory transition-colors cursor-pointer"
-                    onClick={() => toggleSignal(signal.id)}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2.5">
-                        <Badge
-                          variant={signal.strength === 'Critical' ? 'urgent' : 'sage'}
-                          size="sm"
-                        >
-                          {signal.strength}
-                        </Badge>
-                        <span className="text-xs font-bold text-charcoal">{signal.title}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-charcoal-muted">
-                        <span className="text-[11px]">{signal.timestamp}</span>
-                        {isExpanded ? (
-                          <ChevronUp className="w-4 h-4" />
-                        ) : (
-                          <ChevronDown className="w-4 h-4" />
-                        )}
-                      </div>
-                    </div>
-
-                    {isExpanded && (
-                      <div className="mt-2.5 pt-2.5 border-t border-ivory-border text-xs text-charcoal-muted leading-relaxed">
-                        <p>{signal.description}</p>
-                        <div className="mt-2 text-[11px] font-semibold text-sage flex items-center gap-1">
-                          <Sparkles className="w-3 h-3" />
-                          Category: {signal.category}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Recommended Next Actions */}
-          <div className="rounded-2xl border border-gold-border/60 bg-gold-light/40 p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <Sparkles className="w-4 h-4 text-gold-text" />
-              <h4 className="text-sm font-bold text-charcoal">AvaniBot Recommended Next Actions</h4>
-            </div>
-
-            <div className="space-y-2.5">
-              {selectedLead.recommendedActions.map((rec) => (
-                <div
-                  key={rec.id}
-                  className="bg-white rounded-xl p-3 border border-gold-border/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-2xs"
-                >
-                  <div>
-                    <p className="text-xs font-bold text-charcoal">{rec.action}</p>
-                    <p className="text-[11px] text-charcoal-muted mt-0.5">{rec.rationale}</p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleCallFromModal}
-                    className="px-3 py-1.5 rounded-lg bg-forest hover:bg-forest-hover text-white text-xs font-bold transition-colors flex items-center gap-1.5 shrink-0"
-                  >
-                    <span>{rec.ctaText}</span>
-                    <ArrowRight className="w-3 h-3" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Contact History Timeline */}
-          <div>
-            <h4 className="text-xs font-bold uppercase tracking-wider text-charcoal-muted mb-3 flex items-center gap-1.5">
-              <Clock className="w-3.5 h-3.5 text-sage" />
-              Recent Contact History
-            </h4>
-
-            <div className="space-y-3 relative before:absolute before:inset-0 before:left-3 before:w-0.5 before:bg-ivory-border">
-              {selectedLead.contactHistory.map((touch) => (
-                <div key={touch.id} className="relative flex items-start gap-3 pl-1">
-                  <div className="w-5 h-5 rounded-full bg-sage-light border border-sage-border flex items-center justify-center shrink-0 z-10 text-[10px] text-sage font-bold">
-                    ✓
-                  </div>
-                  <div className="bg-ivory-subtle border border-ivory-border rounded-xl p-3 text-xs w-full">
-                    <div className="flex items-center justify-between text-charcoal-muted mb-1">
-                      <span className="font-bold text-charcoal flex items-center gap-1">
-                        {touch.type} {touch.duration && `(${touch.duration})`}
-                      </span>
-                      <span className="text-[11px]">{touch.date}</span>
-                    </div>
-                    <p className="text-charcoal-muted leading-relaxed">{touch.summary}</p>
-                    {touch.outcome && (
-                      <div className="mt-1.5 text-[11px] font-semibold text-emerald-700 flex items-center gap-1">
-                        <CheckCircle className="w-3 h-3" />
-                        Outcome: {touch.outcome}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Modal Footer */}
-        <div className="px-6 py-4 bg-ivory-subtle border-t border-ivory-border flex items-center justify-between">
-          <p className="text-xs text-charcoal-muted">
-            ID: <span className="font-mono font-medium">{selectedLead.id}</span> • Next Action:{' '}
-            <span className="font-semibold text-charcoal">{selectedLead.nextActionDeadline}</span>
-          </p>
           <button
             type="button"
             onClick={closeLeadModal}
-            className="px-4 py-2 rounded-xl bg-white border border-ivory-border text-xs font-bold text-charcoal hover:bg-ivory-dark transition-colors"
+            className="w-6 h-6 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-purple-200 hover:text-white transition-colors"
+            title="Close Modal"
           >
-            Done
+            <X className="w-3.5 h-3.5" />
           </button>
+        </div>
+
+        {/* 2. Stepper Indicator Row */}
+        <div className="px-5 py-2.5 bg-stone-50 border-b border-stone-200 flex items-center justify-between">
+          <div className="flex-1 flex items-center justify-center gap-1.5 pl-6">
+            {leads.map((l, index) => {
+              const isActive = index === currentIndex;
+              return (
+                <button
+                  key={l.id}
+                  type="button"
+                  onClick={() => openLeadModal(l.id)}
+                  title={`Lead ${index + 1}`}
+                  className={`transition-all ${
+                    isActive
+                      ? 'w-5 h-1.5 bg-purple-700 rounded-full'
+                      : 'w-1.5 h-1.5 bg-stone-300 hover:bg-stone-400 rounded-full'
+                  }`}
+                />
+              );
+            })}
+          </div>
+
+          <button
+            type="button"
+            onClick={nextLead}
+            className="w-6 h-6 rounded-full border border-stone-200 bg-white hover:bg-stone-100 flex items-center justify-center text-charcoal transition-all active:scale-95 shadow-2xs"
+            title="Next Lead"
+          >
+            <ChevronRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        {/* Scrollable Body */}
+        <div className="p-4 sm:p-5 overflow-y-auto space-y-3.5 text-xs">
+          {/* Status Dot */}
+          <div className="flex items-center gap-1.5 text-emerald-700 font-extrabold text-[11px]">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
+            <span>OPEN</span>
+          </div>
+
+          {/* Lead Info Row */}
+          <div className="flex items-start justify-between gap-2.5">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-800 font-extrabold text-sm flex items-center justify-center shrink-0 border border-emerald-200">
+                {selectedLead.name
+                  .split(' ')
+                  .map((n) => n[0])
+                  .join('')
+                  .slice(0, 2)
+                  .toUpperCase()}
+              </div>
+
+              <div>
+                <h3 className="text-base font-extrabold text-charcoal tracking-tight leading-tight">
+                  {selectedLead.name}
+                </h3>
+                <p className="text-[11px] text-charcoal-muted mt-0.5">
+                  Interested: {selectedLead.interestedProduct || 'Ortho GRID · ₹8,490'}
+                </p>
+              </div>
+            </div>
+
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 shrink-0">
+              {selectedLead.slaTimeLeft || '2h left'}
+            </span>
+          </div>
+
+          {/* Notice Banner */}
+          <div className="px-3 py-2 rounded-xl bg-amber-50 border border-amber-200/80 text-amber-900 text-[11px] font-semibold flex items-center gap-2">
+            <span>📋</span>
+            <span>{selectedLead.quoteNotice || 'Quote to be given to customer'}</span>
+          </div>
+
+          {/* Score Meters */}
+          <div className="space-y-2">
+            {/* ICP Bar */}
+            <div className="p-2.5 rounded-xl bg-stone-50 border border-stone-200 flex items-center justify-between gap-3">
+              <span className="font-bold text-[11px] text-charcoal flex items-center gap-1">
+                <span>🎯</span>
+                <span>ICP</span>
+              </span>
+              <div className="flex-1 bg-stone-200 h-2 rounded-full overflow-hidden mx-2">
+                <div
+                  className="bg-emerald-600 h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${selectedLead.icpScore}%` }}
+                />
+              </div>
+              <span className="font-extrabold text-xs text-charcoal">{selectedLead.icpScore}%</span>
+            </div>
+
+            {/* Lead Intent Score */}
+            <div className="p-2.5 rounded-xl bg-stone-50 border border-stone-200 flex items-center justify-between">
+              <span className="font-bold text-[11px] text-charcoal flex items-center gap-1">
+                <span>🎯</span>
+                <span>Lead Intent Score</span>
+              </span>
+              <span className="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-extrabold text-xs">
+                {selectedLead.intentScore}
+              </span>
+            </div>
+          </div>
+
+          {/* Collapsible 1: ICP FIT BREAKDOWN */}
+          <div className="rounded-xl border border-stone-200 overflow-hidden">
+            <button
+              type="button"
+              onClick={() => setIcpExpanded((prev) => !prev)}
+              className="w-full px-3.5 py-2.5 bg-stone-50 hover:bg-stone-100 flex items-center justify-between text-[11px] font-bold text-charcoal tracking-wide transition-colors"
+            >
+              <span>ICP FIT BREAKDOWN</span>
+              <ChevronRight
+                className={`w-3.5 h-3.5 text-stone-400 transition-transform ${
+                  icpExpanded ? 'rotate-90' : ''
+                }`}
+              />
+            </button>
+            {icpExpanded && (
+              <div className="p-3 bg-white border-t border-stone-200 space-y-1.5 text-[11px]">
+                {(
+                  selectedLead.icpBreakdown || [
+                    { label: 'Budget Match', score: '92%', detail: 'Fit for ₹8,490+ premium mattress tier' },
+                    { label: 'Decision Authority', score: '95%', detail: 'Direct buyer with immediate purchase intent' },
+                    { label: 'Location Coverage', score: '100%', detail: 'Koramangala, Bengaluru hub' },
+                  ]
+                ).map((item, idx) => (
+                  <div key={idx} className="flex items-center justify-between py-1 border-b border-stone-100 last:border-none">
+                    <span className="text-stone-600">{item.label}</span>
+                    <span className="font-bold text-emerald-700">{item.score}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Collapsible 2: HOW WE GOT HERE */}
+          <div className="rounded-xl border border-stone-200 overflow-hidden">
+            <button
+              type="button"
+              onClick={() => setHistoryExpanded((prev) => !prev)}
+              className="w-full px-3.5 py-2.5 bg-stone-50 hover:bg-stone-100 flex items-center justify-between text-[11px] font-bold text-charcoal tracking-wide transition-colors"
+            >
+              <span className="flex items-center gap-1.5 text-purple-900">
+                <Sparkles className="w-3.5 h-3.5 text-purple-600" />
+                <span>HOW WE GOT HERE</span>
+              </span>
+              <ChevronRight
+                className={`w-3.5 h-3.5 text-stone-400 transition-transform ${
+                  historyExpanded ? 'rotate-90' : ''
+                }`}
+              />
+            </button>
+            {historyExpanded && (
+              <div className="p-3 bg-white border-t border-stone-200 space-y-2 text-[11px]">
+                {(
+                  selectedLead.howWeGotHere || [
+                    { step: 'Inbound WhatsApp Inquiry', timestamp: '10:12 AM', note: 'Inquired via WhatsApp Business Campaign' },
+                    { step: 'Product Brochure Viewed', timestamp: '10:14 AM', note: 'Viewed Ortho GRID technical PDF' },
+                    { step: 'Cart Abandonment Signal', timestamp: '10:20 AM', note: 'Added King Size to cart, stopped at EMI step' },
+                  ]
+                ).map((step, idx) => (
+                  <div key={idx} className="flex items-start gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-purple-600 mt-1.5 shrink-0" />
+                    <div>
+                      <p className="font-bold text-charcoal">{step.step}</p>
+                      <p className="text-[10px] text-stone-500">{step.note}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Collapsible 3: WHERE WE PICKED UP SIGNALS (Collapsible, expanded by default) */}
+          <div className="rounded-xl border border-stone-200 overflow-hidden">
+            <button
+              type="button"
+              onClick={() => setSignalsExpanded((prev) => !prev)}
+              className="w-full px-3.5 py-2.5 bg-stone-50 hover:bg-stone-100 flex items-center justify-between text-[11px] font-bold text-charcoal tracking-wide transition-colors"
+            >
+              <span className="flex items-center gap-1.5">
+                <span>📑</span>
+                <span>WHERE WE PICKED UP SIGNALS</span>
+              </span>
+              <ChevronDown
+                className={`w-3.5 h-3.5 text-stone-400 transition-transform ${
+                  signalsExpanded ? '' : '-rotate-90'
+                }`}
+              />
+            </button>
+
+            {signalsExpanded && (
+              <div className="p-3 bg-stone-50/60 border-t border-stone-200 space-y-2.5">
+                {/* Signal 1 */}
+                <div className="p-2.5 rounded-lg bg-white border border-stone-200 space-y-1">
+                  <div className="flex items-center gap-1 text-[11px] font-bold text-charcoal">
+                    <span>⚡</span>
+                    <span>Financing Related</span>
+                  </div>
+                  <p className="text-[10px] text-stone-600 leading-relaxed pl-4">
+                    Asked specifically about EMI options on the Ortho GRID — budget is a live concern, not a blocker
+                  </p>
+                </div>
+
+                {/* Signal 2 */}
+                <div className="p-2.5 rounded-lg bg-white border border-stone-200 space-y-1">
+                  <div className="flex items-center gap-1 text-[11px] font-bold text-charcoal">
+                    <span>📄</span>
+                    <span>Quotation Demanded</span>
+                  </div>
+                  <p className="text-[10px] text-stone-600 leading-relaxed pl-4">
+                    Compared pricing with a competitor before reaching out — price-anchored, expects a competitive number
+                  </p>
+                </div>
+
+                {/* Signal 3 */}
+                <div className="p-2.5 rounded-lg bg-white border border-stone-200 space-y-1">
+                  <div className="flex items-center gap-1 text-[11px] font-bold text-charcoal">
+                    <span>🛡️</span>
+                    <span>Warranty Related</span>
+                  </div>
+                  <p className="text-[10px] text-stone-600 leading-relaxed pl-4">
+                    Hasn't raised this yet — worth proactively mentioning the 100-night trial to reduce perceived risk
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Cumulative Missed Warning Banner */}
+          <div className="pt-1 text-[10px] font-bold text-red-600 flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-red-600 shrink-0" />
+            <span>
+              CUMULATIVE MISSED: {selectedLead.cumulativeMissed ?? 2} · expired without close,
+              visible to manager
+            </span>
+          </div>
+
+          {/* Calling Bar at bottom */}
+          <div className="pt-2 flex items-center justify-center gap-2 border-t border-stone-100">
+            <span className="px-2 py-0.5 rounded-md bg-stone-100 text-stone-600 text-[10px] font-extrabold uppercase">
+              DEMO
+            </span>
+            <button
+              type="button"
+              onClick={() => handleCall('voice-ai')}
+              className="px-3 py-1.5 rounded-full bg-purple-700 hover:bg-purple-800 text-white text-[11px] font-bold shadow-xs transition-all flex items-center gap-1"
+            >
+              <Phone className="w-3 h-3 text-purple-200" />
+              <span>In-app call</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleCall('human-agent')}
+              className="px-3 py-1.5 rounded-full bg-forest hover:bg-forest-hover text-white text-[11px] font-bold shadow-xs transition-all flex items-center gap-1"
+            >
+              <Phone className="w-3 h-3 text-emerald-300" />
+              <span>Phone call</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>

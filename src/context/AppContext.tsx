@@ -22,64 +22,65 @@ import {
 } from '../data/initialData';
 
 const DEFAULT_USER_PROFILE: UserProfile = {
-  name: 'Alex Chen',
-  email: 'alex.chen@on-ground.ai',
-  phone: '+1 (415) 555-0143',
-  title: 'Senior Account Executive',
-  department: 'Enterprise Sales & Telephony',
-  dateOfBirth: '1994-06-15',
+  name: 'Arvind R.',
+  email: 'arvind.r@thesleepcompany.in',
+  phone: '+91 98450 67890',
+  title: 'Call Centre Specialist',
+  department: 'Customer Experience & Inside Sales',
+  dateOfBirth: '1995-08-22',
   avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
-  bio: 'Specializing in enterprise contact center transformation, SIP trunk migration, and real-time AI voice workflows.',
-  timeZone: 'America/Los_Angeles (PST)',
-  directExtension: 'Ext. 4022',
+  bio: 'Specializing in sleep wellness consultation, quotation delivery, and objection handling for The Sleep Company.',
+  timeZone: 'Asia/Kolkata (IST)',
+  directExtension: 'Ext. 104',
 };
 
 const INITIAL_NOTIFICATIONS: AppNotification[] = [
   {
     id: 'notif-1',
-    title: 'Urgent Missed Call',
-    category: 'Missed Call',
-    message: 'Marcus Vance (Vertex) called back regarding benchmarking',
-    timestamp: '18 minutes ago',
+    title: 'Urgent Quote Request',
+    category: 'Buying Signal',
+    message: 'Mukunda requested Ortho GRID ₹8,490 quote with No-Cost EMI (2h left)',
+    timestamp: '15 minutes ago',
     read: false,
     priority: 'urgent',
     leadId: 'lead-1',
-    actionScreen: 'incoming',
-    value: '$48,000 ARR',
+    actionScreen: 'calls',
+    value: '₹8,490',
   },
   {
     id: 'notif-2',
-    title: 'Pulse AI Escalation',
+    title: 'Needs Your Input',
     category: 'Pulse AI',
-    message: '15% discount request from Apex in #deal-desk requires approval',
-    timestamp: '1 hour ago',
+    message: 'Confirm 4:30 PM callback with Priya Iyer in #callcentre-team',
+    timestamp: '25 minutes ago',
     read: false,
-    priority: 'gold',
+    priority: 'urgent',
     actionScreen: 'pulse-channel',
-    actionChannelId: 'chan-deal-desk',
+    actionChannelId: 'chan-callcentre-team',
+    leadId: 'lead-2',
   },
   {
     id: 'notif-3',
-    title: 'Upcoming Platform Demo',
+    title: 'Scheduled Callback',
     category: 'Meeting',
-    message: 'Executive demo with Sophia Sterling (Horizon Logistics Global)',
-    timestamp: 'Today, 4:00 PM',
+    message: 'Billing review callback with Priya Iyer at 4:30 PM',
+    timestamp: 'Today, 4:30 PM',
     read: false,
     priority: 'sage',
     leadId: 'lead-2',
     actionScreen: 'calendar',
-    value: '$34,500 ARR',
+    value: '₹14,999',
   },
   {
     id: 'notif-4',
     title: 'High-Intent Buying Signal',
     category: 'Buying Signal',
-    message: 'David Kalu (FinPulse) downloaded PCI-DSS Compliance Whitepaper',
-    timestamp: 'Today, 1:40 PM',
+    message: 'Mukunda downloaded Ortho GRID 10-year warranty specifications',
+    timestamp: 'Today, 10:24 AM',
     read: false,
     priority: 'sage',
-    leadId: 'lead-3',
-    value: '$62,000 ARR',
+    leadId: 'lead-1',
+    value: '₹8,490',
   },
 ];
 
@@ -121,12 +122,16 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [activeScreen, setActiveScreen] = useState<ScreenId>('dashboard');
-  const [activeChannelId, setActiveChannelId] = useState<string>('chan-urgent-leads');
+  const [activeChannelId, setActiveChannelId] = useState<string>('chan-callcentre-team');
   const [userProfile, setUserProfile] = useState<UserProfile>(() => {
     try {
       const saved = localStorage.getItem('onground_user_profile');
       if (saved) {
-        return { ...DEFAULT_USER_PROFILE, ...JSON.parse(saved) };
+        const parsed = JSON.parse(saved);
+        if (parsed.name === 'Alex Chen') {
+          return DEFAULT_USER_PROFILE;
+        }
+        return { ...DEFAULT_USER_PROFILE, ...parsed };
       }
     } catch (e) {
       console.warn('Failed to load profile from localStorage', e);
@@ -342,7 +347,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       prev.map((chan) => {
         if (chan.id === channelId && chan.pinnedAction) {
           let resolution = 'Action executed successfully.';
-          if (actionId === 'approve-discount') {
+          if (actionId === 'confirm-callback') {
+            resolution = '✅ 4:30 PM callback confirmed with Priya Iyer. Billing courtesy credit linked.';
+          } else if (actionId === 'reschedule-callback') {
+            resolution = '⏱️ Callback marked for reschedule. Follow-up slot sent to Priya.';
+          } else if (actionId === 'approve-discount') {
             resolution = '✅ Approved 15% discount for 24-month contract. Order form generated.';
           } else if (actionId === 'counter-discount') {
             resolution = '🔄 Counter-offer of 10% discount + $1,500 onboarding credit sent.';
@@ -350,6 +359,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             resolution = '📞 Outbound callback to Marcus Vance queued on priority line.';
           } else if (actionId === 'send-link') {
             resolution = '📅 Priority VIP calendar link dispatched via SMS.';
+          } else if (actionId === 'call-mukunda') {
+            resolution = '📞 Dialing Mukunda for Ortho GRID quotation review.';
+          } else if (actionId.startsWith('custom:')) {
+            resolution = `💬 Response sent: "${actionId.replace('custom:', '')}"`;
           }
 
           const actionRecordMsg = {

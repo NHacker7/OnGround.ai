@@ -1,315 +1,358 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Sparkles,
-  Bot,
-  MessageSquare,
-  Hash,
+  Search,
   ChevronRight,
-  Award,
-  Zap,
   TrendingUp,
   ShieldCheck,
-  Cpu,
-  ThumbsUp,
-  ArrowRight,
-  Headphones,
-  CheckCircle2,
+  Zap,
+  Target,
+  MessageCircle,
+  Award,
+  X,
+  ExternalLink,
+  Bot,
+  Grid,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
-import { Badge } from '../components/common/Badge';
 
 export const PulseHome: React.FC = () => {
-  const { pulseChannels, setActiveChannelId, setActiveScreen } = useApp();
+  const { setActiveScreen, setActiveChannelId, openLeadModal } = useApp();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [briefModalOpen, setBriefModalOpen] = useState(false);
+  const [qaAnswer, setQaAnswer] = useState<string | null>(null);
 
   const handleOpenChannel = (channelId: string) => {
     setActiveChannelId(channelId);
     setActiveScreen('pulse-channel');
   };
 
-  const roleAgents = [
-    {
-      name: 'Sales Coaching Agent',
-      icon: TrendingUp,
-      status: 'Live & Listening',
-      role: 'Pitch Guidance & Objection Scripting',
-      accuracy: '98.4%',
-      desc: 'Listens to outbound pitch cadence and surfaces real-time objection rebuttals.',
-    },
-    {
-      name: 'Objection Handler',
-      icon: ShieldCheck,
-      status: 'Active',
-      role: 'Competitor Defense (Talkdesk/Five9)',
-      accuracy: '96.2%',
-      desc: 'Instant tactical talk tracks when prospects cite legacy PBX contracts or downtime fears.',
-    },
-    {
-      name: 'Follow-Up Drafter',
-      icon: Zap,
-      status: 'Ready',
-      role: 'Email Recap & Mutual Action Plans',
-      accuracy: '99.1%',
-      desc: 'Generates executive email recaps and deliverables within 10 seconds of call hangup.',
-    },
-    {
-      name: 'Executive Deal Strategist',
-      icon: Award,
-      status: 'Active in #deal-desk',
-      role: 'Discounting & Margin Optimizer',
-      accuracy: '94.8%',
-      desc: 'Calculates contract margin yield and approves multi-year pricing tiers in real-time.',
-    },
-  ];
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!searchQuery.trim()) return;
 
-  const taskAgents = [
-    {
-      name: 'Autonomous Transcriber & Audio Redactor',
-      speed: 'Sub-200ms',
-      desc: 'Transcribes customer audio and silences PCI-DSS cardholder data on the fly.',
-    },
-    {
-      name: 'Real-Time Buying Signal Detector',
-      speed: 'Instant Alert',
-      desc: 'Flags intent spikes from pricing calculator visits and whitepaper downloads.',
-    },
-    {
-      name: 'Salesforce & HubSpot CRM Sync Agent',
-      speed: 'Continuous',
-      desc: 'Auto-categorizes call dispositions, recording links, and rep follow-up tasks.',
-    },
-  ];
-
-  const kudos = [
-    {
-      id: 'k-1',
-      recipient: 'Priya Sharma',
-      giver: 'Marcus (VP Sales)',
-      content: 'Closed the Vertex Dynamics proof-of-concept benchmark in 48 hours! 🚀',
-      time: '1 hour ago',
-    },
-    {
-      id: 'k-2',
-      recipient: 'Alex Chen',
-      giver: 'Elena (Deal Desk)',
-      content: 'Phenomenal objection handling on the FinPulse security call today. ⭐',
-      time: '3 hours ago',
-    },
-  ];
+    const q = searchQuery.toLowerCase();
+    if (q.includes('mukunda') || q.includes('ortho') || q.includes('8490') || q.includes('quote')) {
+      setQaAnswer(
+        'Mukunda is waiting for the Ortho GRID quotation (₹8,490) with No-Cost EMI approval. SLA deadline in 2h.'
+      );
+    } else if (q.includes('priya') || q.includes('callback') || q.includes('dispute') || q.includes('4:30')) {
+      setQaAnswer(
+        'Priya Iyer has a scheduled 4:30 PM callback in #callcentre-team regarding ₹1,200 discount code application.'
+      );
+    } else {
+      setQaAnswer(
+        `AvaniBot searched Pulse for "${searchQuery}": Found 2 related items in #callcentre-team.`
+      );
+    }
+  };
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-300">
-      {/* Top Welcome & AvaniBot Banner */}
-      <div className="p-6 lg:p-8 rounded-3xl bg-forest text-ivory border border-forest-border shadow-soft relative overflow-hidden">
-        <div className="absolute -right-10 -bottom-10 w-72 h-72 rounded-full bg-sage/20 blur-3xl pointer-events-none" />
+    <div className="space-y-4 pb-20 animate-in fade-in duration-150">
+      {/* 1. Purple Header Bar */}
+      <div className="rounded-xl bg-[#3b0764] text-white px-4 py-3 flex items-center justify-between shadow-xs">
+        <div className="flex items-center gap-2.5">
+          <div className="w-6 h-6 rounded-md bg-white/10 flex items-center justify-center text-purple-200">
+            <Grid className="w-3.5 h-3.5" />
+          </div>
+          <h1 className="text-sm font-bold tracking-tight text-white flex items-center gap-2">
+            <span>Pulse</span>
+            <span className="text-xs text-purple-200 font-normal">The Sleep Company · Koramangala</span>
+          </h1>
+        </div>
+      </div>
 
-        <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-          <div className="flex items-start gap-4">
-            <div className="p-3.5 rounded-2xl bg-gradient-to-br from-sage to-forest-light border border-emerald-400/30 text-white shadow-md">
-              <Bot className="w-8 h-8" />
-            </div>
+      {/* 2. Full-Width Search Input */}
+      <form onSubmit={handleSearchSubmit} className="relative">
+        <div className="relative flex items-center bg-white rounded-xl border border-stone-200 shadow-2xs focus-within:border-purple-600 focus-within:ring-1 focus-within:ring-purple-600">
+          <div className="pl-3.5 pr-2 text-purple-600">
+            <Sparkles className="w-4 h-4" />
+          </div>
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Ask AvaniBot or search Pulse..."
+            className="w-full py-2.5 pr-10 text-xs text-charcoal bg-transparent placeholder-stone-400 focus:outline-hidden"
+          />
+          <button
+            type="submit"
+            className="absolute right-2.5 p-1 rounded-md text-stone-400 hover:text-purple-700"
+            title="Search Pulse"
+          >
+            <Search className="w-4 h-4" />
+          </button>
+        </div>
 
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-bold tracking-tight text-white">AvaniBot Intelligence</h1>
-                <Badge variant="forest" size="sm">
-                  Autonomous AI Agent
-                </Badge>
-                <span className="text-[10px] font-semibold text-emerald-300 bg-forest-surface px-2 py-0.5 rounded-full border border-forest-border">
-                  Simulated AI
-                </span>
+        {qaAnswer && (
+          <div className="mt-2 p-3 rounded-xl bg-purple-50 border border-purple-200 text-purple-950 flex items-start justify-between gap-3 text-xs shadow-2xs">
+            <div className="flex items-start gap-2">
+              <Bot className="w-4 h-4 text-purple-700 shrink-0 mt-0.5" />
+              <div>
+                <p className="font-semibold">{qaAnswer}</p>
+                {searchQuery.toLowerCase().includes('mukunda') && (
+                  <button
+                    type="button"
+                    onClick={() => openLeadModal('lead-1')}
+                    className="mt-1 text-[11px] font-bold text-purple-700 hover:underline flex items-center gap-1"
+                  >
+                    <span>Open Mukunda's Lead File (₹8,490)</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </button>
+                )}
               </div>
-              <p className="text-xs text-gray-300 mt-1 max-w-xl leading-relaxed">
-                AvaniBot continuously analyzes live agent speech, extracts customer buying signals,
-                and routes high-stakes escalations to your team communication channels.
-              </p>
-
-              <div className="flex items-center gap-4 mt-3 text-xs text-gray-300">
-                <span className="flex items-center gap-1.5 font-semibold text-emerald-300">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-                  38 Calls Transcribed Today
-                </span>
-                <span className="flex items-center gap-1.5 text-gold-light">
-                  <Sparkles className="w-3.5 h-3.5" /> 4 Urgent Escalations Handled
-                </span>
-              </div>
             </div>
+            <button
+              type="button"
+              onClick={() => setQaAnswer(null)}
+              className="p-1 rounded text-purple-400 hover:text-purple-700"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
+      </form>
+
+      {/* 3. AvaniBot Panel */}
+      <div className="p-5 rounded-2xl bg-gradient-to-r from-[#4c1d95] via-[#581c87] to-[#3b0764] text-white shadow-xs relative overflow-hidden">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-purple-200" />
+              <span className="font-bold text-sm text-white">AvaniBot</span>
+              <span className="text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-emerald-400/20 text-emerald-300 border border-emerald-400/30">
+                ALWAYS ON
+              </span>
+            </div>
+            <p className="text-xs text-purple-100 max-w-xl leading-relaxed">
+              Ask me about anything happening in Pulse — daily briefs, action items, quick answers
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => setBriefModalOpen(true)}
+              className="px-3 py-1.5 rounded-xl bg-white/15 hover:bg-white/25 active:scale-95 text-white text-xs font-bold border border-white/20 backdrop-blur-xs transition-all flex items-center gap-1.5"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+              <span>Daily Brief</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                const input = document.querySelector('input[placeholder*="Ask AvaniBot"]') as HTMLInputElement;
+                input?.focus();
+              }}
+              className="px-3 py-1.5 rounded-xl bg-white/15 hover:bg-white/25 active:scale-95 text-white text-xs font-bold border border-white/20 backdrop-blur-xs transition-all flex items-center gap-1.5"
+            >
+              <span>💬 Ask a question</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* 4. Custom Agents Card */}
+      <div className="bg-white rounded-2xl border border-stone-200 shadow-xs divide-y divide-stone-100 overflow-hidden text-xs">
+        <div className="px-5 py-3.5 bg-stone-50/70 border-b border-stone-100">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-charcoal">
+            <Sparkles className="w-3.5 h-3.5 text-purple-600" />
+            <span>Custom Agents</span>
+          </div>
+          <p className="text-[11px] text-stone-500 mt-0.5">
+            Set up by your manager — already live, tap to open
+          </p>
+        </div>
+
+        {/* ROLE AGENTS */}
+        <div className="p-4 space-y-2">
+          <div className="text-[10px] font-bold uppercase tracking-wider text-stone-400 px-1">
+            ROLE AGENTS (run a team)
           </div>
 
           <button
             type="button"
-            onClick={() => handleOpenChannel('chan-urgent-leads')}
-            className="px-5 py-3 rounded-2xl bg-sage hover:bg-sage-hover text-white text-xs font-bold transition-all shadow-md flex items-center gap-2 active:scale-95 shrink-0"
+            onClick={() => handleOpenChannel('chan-callcentre-team')}
+            className="w-full flex items-center justify-between p-2.5 rounded-xl hover:bg-stone-50 transition-colors group text-left"
           >
-            <MessageSquare className="w-4 h-4" />
-            <span>Open Urgent Channel</span>
+            <div className="flex items-center gap-3">
+              <div className="w-7 h-7 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs">
+                #
+              </div>
+              <div>
+                <span className="font-bold text-xs text-charcoal group-hover:text-purple-700">
+                  # callcentre-agent
+                </span>
+                <p className="text-[11px] text-stone-400">Call Centre Agent</p>
+              </div>
+            </div>
+            <ChevronRight className="w-4 h-4 text-stone-300 group-hover:text-stone-500 transition-colors" />
+          </button>
+        </div>
+
+        {/* TASK AGENTS */}
+        <div className="p-4 space-y-2">
+          <div className="text-[10px] font-bold uppercase tracking-wider text-stone-400 px-1">
+            TASK AGENTS (move one metric)
+          </div>
+
+          <div className="space-y-1">
+            {/* cross-sell-agent */}
+            <div className="flex items-center justify-between p-2.5 rounded-xl hover:bg-stone-50 transition-colors">
+              <div className="flex items-center gap-3">
+                <div className="w-7 h-7 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center font-bold text-xs">
+                  #
+                </div>
+                <div>
+                  <span className="font-bold text-xs text-charcoal"># cross-sell-agent</span>
+                  <p className="text-[11px] text-stone-400">Your Attach rate · 5 members</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="px-2 py-0.5 rounded-md bg-stone-100 text-stone-700 font-extrabold text-[10px]">
+                  24%
+                </span>
+                <ChevronRight className="w-4 h-4 text-stone-300" />
+              </div>
+            </div>
+
+            {/* sop-agent */}
+            <div className="flex items-center justify-between p-2.5 rounded-xl hover:bg-stone-50 transition-colors">
+              <div className="flex items-center gap-3">
+                <div className="w-7 h-7 rounded-lg bg-teal-100 text-teal-700 flex items-center justify-center font-bold text-xs">
+                  #
+                </div>
+                <div>
+                  <span className="font-bold text-xs text-charcoal"># sop-agent</span>
+                  <p className="text-[11px] text-stone-400">Your SOP adherence · 5 members</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="px-2 py-0.5 rounded-md bg-stone-100 text-stone-700 font-extrabold text-[10px]">
+                  81%
+                </span>
+                <ChevronRight className="w-4 h-4 text-stone-300" />
+              </div>
+            </div>
+
+            {/* lead-conversion-agent */}
+            <div className="flex items-center justify-between p-2.5 rounded-xl hover:bg-stone-50 transition-colors">
+              <div className="flex items-center gap-3">
+                <div className="w-7 h-7 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-xs">
+                  #
+                </div>
+                <div>
+                  <span className="font-bold text-xs text-charcoal"># lead-conversion-agent</span>
+                  <p className="text-[11px] text-stone-400">Lead Conversion Agent</p>
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-stone-300" />
+            </div>
+
+            {/* capture-agent */}
+            <div className="flex items-center justify-between p-2.5 rounded-xl hover:bg-stone-50 transition-colors">
+              <div className="flex items-center gap-3">
+                <div className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xs">
+                  #
+                </div>
+                <div>
+                  <span className="font-bold text-xs text-charcoal"># capture-agent</span>
+                  <p className="text-[11px] text-stone-400">Your Capture Coverage · 5 members</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="px-2 py-0.5 rounded-md bg-stone-100 text-stone-700 font-extrabold text-[10px]">
+                  78%
+                </span>
+                <ChevronRight className="w-4 h-4 text-stone-300" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* GENERAL */}
+        <div className="p-4 space-y-2">
+          <div className="text-[10px] font-bold uppercase tracking-wider text-stone-400 px-1">
+            GENERAL
+          </div>
+
+          <button
+            type="button"
+            onClick={() => handleOpenChannel('chan-customer-discussions')}
+            className="w-full flex items-center justify-between p-2.5 rounded-xl hover:bg-stone-50 transition-colors group text-left"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xs">
+                <MessageCircle className="w-4 h-4 text-emerald-600" />
+              </div>
+              <div>
+                <span className="font-bold text-xs text-charcoal group-hover:text-emerald-700">
+                  customer-discussions
+                </span>
+                <p className="text-[11px] text-stone-400">Relayed via WhatsApp Business</p>
+              </div>
+            </div>
+            <ChevronRight className="w-4 h-4 text-stone-300 group-hover:text-stone-500 transition-colors" />
           </button>
         </div>
       </div>
 
-      {/* Grid: Communication Channels & Role Agents */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left 2 Cols: Active Communication Channels & Role Agents */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Communication Channels */}
-          <div className="p-6 rounded-3xl bg-white border border-ivory-border shadow-soft">
-            <div className="flex items-center justify-between mb-4 pb-3 border-b border-ivory-border">
-              <div>
-                <h2 className="text-base font-bold text-charcoal flex items-center gap-2">
-                  <Hash className="w-4 h-4 text-sage" />
-                  Pulse Team Channels
-                </h2>
-                <p className="text-xs text-charcoal-muted">
-                  Interactive team communication and AI deal collaboration
-                </p>
-              </div>
-              <span className="text-xs text-charcoal-muted italic">Click to enter chat</span>
-            </div>
-
-            <div className="space-y-3">
-              {pulseChannels.map((channel) => (
-                <div
-                  key={channel.id}
-                  onClick={() => handleOpenChannel(channel.id)}
-                  className="p-4 rounded-2xl border border-ivory-border bg-ivory-subtle/50 hover:bg-ivory transition-all cursor-pointer flex items-center justify-between gap-4 group"
-                >
-                  <div className="flex items-center gap-3.5 min-w-0">
-                    <div className="w-10 h-10 rounded-xl bg-forest-surface text-emerald-200 border border-forest-border flex items-center justify-center font-bold text-sm shrink-0">
-                      #
-                    </div>
-
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold text-charcoal group-hover:text-sage transition-colors">
-                          {channel.name}
-                        </span>
-                        {channel.unreadCount > 0 && (
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-gold text-forest-dark">
-                            {channel.unreadCount} unread
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-xs text-charcoal-muted truncate mt-0.5">
-                        {channel.lastMessage}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-3 shrink-0">
-                    <span className="text-[11px] font-mono text-charcoal-muted">
-                      {channel.lastMessageTime}
-                    </span>
-                    <ChevronRight className="w-4 h-4 text-charcoal-muted group-hover:text-sage transition-transform group-hover:translate-x-1" />
-                  </div>
-                </div>
-              ))}
-            </div>
+      {/* 5. Kudos Card */}
+      <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <span className="text-amber-700">💡</span>
+            <span className="font-bold text-charcoal">Kudos</span>
+            <span className="px-2 py-0.2 rounded-full bg-amber-200 text-amber-900 font-extrabold text-[10px]">
+              3 NEW
+            </span>
           </div>
-
-          {/* Autonomous Role Agents */}
-          <div className="p-6 rounded-3xl bg-white border border-ivory-border shadow-soft">
-            <div className="flex items-center justify-between mb-4 pb-3 border-b border-ivory-border">
-              <div>
-                <h2 className="text-base font-bold text-charcoal flex items-center gap-2">
-                  <Cpu className="w-4 h-4 text-sage" />
-                  Autonomous Role Agents
-                </h2>
-                <p className="text-xs text-charcoal-muted">
-                  Simulated specialized AI workers co-piloting customer engagements
-                </p>
-              </div>
-              <Badge variant="sage" size="sm">
-                4 Deployed
-              </Badge>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {roleAgents.map((agent) => {
-                const Icon = agent.icon;
-                return (
-                  <div
-                    key={agent.name}
-                    className="p-4 rounded-2xl border border-ivory-border bg-ivory-subtle/50 hover:bg-white hover:border-sage-border transition-all space-y-2.5"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="p-2 rounded-xl bg-sage-light text-sage-text">
-                        <Icon className="w-4 h-4" />
-                      </div>
-                      <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                        {agent.accuracy} benchmark
-                      </span>
-                    </div>
-
-                    <div>
-                      <h3 className="text-xs font-bold text-charcoal">{agent.name}</h3>
-                      <p className="text-[11px] font-semibold text-sage">{agent.role}</p>
-                    </div>
-
-                    <p className="text-[11px] text-charcoal-muted leading-relaxed">{agent.desc}</p>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+          <p className="text-[11px] text-stone-600 italic">
+            "Great work with Mukunda — closed that objection beautifully... Sunita Rao"
+          </p>
         </div>
 
-        {/* Right Col: Task Agents & Team Kudos */}
-        <div className="space-y-6">
-          {/* Task Agents */}
-          <div className="p-6 rounded-3xl bg-white border border-ivory-border shadow-soft">
-            <h3 className="text-base font-bold text-charcoal mb-1 flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-gold" />
-              Task Execution Agents
-            </h3>
-            <p className="text-xs text-charcoal-muted mb-4">Background automation workers</p>
-
-            <div className="space-y-3">
-              {taskAgents.map((ta, idx) => (
-                <div
-                  key={idx}
-                  className="p-3.5 rounded-2xl bg-ivory-subtle border border-ivory-border text-xs space-y-1"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-charcoal">{ta.name}</span>
-                    <span className="text-[10px] font-mono text-sage font-bold bg-white px-2 py-0.5 rounded-md border border-ivory-border">
-                      {ta.speed}
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-charcoal-muted leading-relaxed">{ta.desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Team Kudos & Wins Feed */}
-          <div className="p-6 rounded-3xl bg-white border border-ivory-border shadow-soft">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-base font-bold text-charcoal flex items-center gap-2">
-                <Award className="w-4 h-4 text-gold" />
-                Team Kudos & Wins
-              </h3>
-              <ThumbsUp className="w-4 h-4 text-sage" />
-            </div>
-
-            <div className="space-y-3">
-              {kudos.map((k) => (
-                <div
-                  key={k.id}
-                  className="p-3.5 rounded-2xl bg-gold-light/40 border border-gold-border/60 text-xs space-y-1.5"
-                >
-                  <div className="flex items-center justify-between text-[11px]">
-                    <span className="font-bold text-charcoal">
-                      To: <span className="text-forest">{k.recipient}</span>
-                    </span>
-                    <span className="text-charcoal-muted font-mono">{k.time}</span>
-                  </div>
-                  <p className="text-charcoal leading-relaxed">{k.content}</p>
-                  <p className="text-[10px] text-charcoal-muted font-medium">From: {k.giver}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+        <span className="text-[10px] font-extrabold tracking-wider text-stone-400 self-end sm:self-center">
+          12 ALL-TIME
+        </span>
       </div>
+
+      {/* Daily Brief Modal */}
+      {briefModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-150">
+          <div className="bg-white rounded-2xl border border-stone-200 max-w-lg w-full p-5 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-stone-100 pb-3">
+              <div className="flex items-center gap-2 font-bold text-sm text-charcoal">
+                <Sparkles className="w-4 h-4 text-purple-600" />
+                <span>Daily Brief · Koramangala Hub</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setBriefModalOpen(false)}
+                className="p-1 rounded text-stone-400 hover:text-charcoal"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-2.5 text-xs text-charcoal leading-relaxed">
+              <p>• <strong>Mukunda (Ortho GRID):</strong> Deliver ₹8,490 quote with 10-year warranty certificate within 2 hours.</p>
+              <p>• <strong>Priya Iyer:</strong> 4:30 PM callback in #callcentre-team. ₹1,200 courtesy credit approved.</p>
+              <p>• <strong>Team SOP adherence:</strong> Currently at 81%.</p>
+            </div>
+
+            <div className="flex justify-end pt-2">
+              <button
+                type="button"
+                onClick={() => setBriefModalOpen(false)}
+                className="px-4 py-1.5 rounded-lg bg-stone-900 text-white text-xs font-bold"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

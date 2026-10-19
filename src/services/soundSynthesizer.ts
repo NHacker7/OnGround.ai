@@ -3,25 +3,69 @@
  * Generates authentic dual-tone multi-frequency (DTMF) dial tones,
  * North American standard ringback tones (440Hz + 480Hz),
  * and live audio waveform analysis for phone calls.
+ *
+ * Implements independent hardware-level control for:
+ * - Microphone input muting (disables MediaStream audio tracks)
+ * - Speaker audio output (routes through master gain node to AudioContext destination)
  */
 
 class SoundSynthesizer {
   private ctx: AudioContext | null = null;
+  private masterSpeakerGain: GainNode | null = null;
   private ringbackInterval: any = null;
-  private ambientSource: AudioNode | null = null;
   private analyser: AnalyserNode | null = null;
   private micStream: MediaStream | null = null;
   private micSource: MediaStreamAudioSourceNode | null = null;
+  private isMuted: boolean = false;
+  private isSpeakerOn: boolean = true;
 
   private getContext(): AudioContext {
     if (!this.ctx) {
       const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
       this.ctx = new AudioCtx();
+      this.masterSpeakerGain = this.ctx.createGain();
+      this.masterSpeakerGain.gain.setValueAtTime(this.isSpeakerOn ? 1.0 : 0.0, this.ctx.currentTime);
+      this.masterSpeakerGain.connect(this.ctx.destination);
     }
     if (this.ctx.state === 'suspended') {
       this.ctx.resume();
     }
     return this.ctx;
+  }
+
+  private getSpeakerDestination(): AudioNode {
+    this.getContext();
+    return this.masterSpeakerGain || this.ctx!.destination;
+  }
+
+  /**
+   * Independently control speaker output (hardware level master gain)
+   */
+  public setSpeaker(enabled: boolean) {
+    this.isSpeakerOn = enabled;
+    if (this.ctx && this.masterSpeakerGain) {
+      this.masterSpeakerGain.gain.setValueAtTime(enabled ? 1.0 : 0.0, this.ctx.currentTime);
+    }
+  }
+
+  /**
+   * Independently control microphone input (MediaStream track hardware mute)
+   */
+  public setMuted(muted: boolean) {
+    this.isMuted = muted;
+    if (this.micStream) {
+      this.micStream.getAudioTracks().forEach((track) => {
+        track.enabled = !muted;
+      });
+    }
+  }
+
+  public getMutedState(): boolean {
+    return this.isMuted;
+  }
+
+  public getSpeakerState(): boolean {
+    return this.isSpeakerOn;
   }
 
   /**
@@ -62,7 +106,7 @@ class SoundSynthesizer {
 
       osc1.connect(gainNode);
       osc2.connect(gainNode);
-      gainNode.connect(ctx.destination);
+      gainNode.connect(this.getSpeakerDestination());
 
       osc1.start();
       osc2.start();
@@ -98,7 +142,7 @@ class SoundSynthesizer {
 
         osc1.connect(gain);
         osc2.connect(gain);
-        gain.connect(ctx.destination);
+        gain.connect(this.getSpeakerDestination());
 
         osc1.start();
         osc2.start();
@@ -140,7 +184,7 @@ class SoundSynthesizer {
       gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
 
       osc.connect(gain);
-      gain.connect(ctx.destination);
+      gain.connect(this.getSpeakerDestination());
 
       osc.start();
       osc.stop(ctx.currentTime + 0.35);
@@ -166,7 +210,7 @@ class SoundSynthesizer {
       gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
 
       osc.connect(gain);
-      gain.connect(ctx.destination);
+      gain.connect(this.getSpeakerDestination());
 
       osc.start();
       osc.stop(ctx.currentTime + 0.3);
@@ -183,6 +227,12 @@ class SoundSynthesizer {
       if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         this.micStream = stream;
+
+        // Apply current mute state to incoming tracks
+        stream.getAudioTracks().forEach((track) => {
+          track.enabled = !this.isMuted;
+        });
+
         const ctx = this.getContext();
         this.analyser = ctx.createAnalyser();
         this.analyser.fftSize = 64;
@@ -211,7 +261,7 @@ class SoundSynthesizer {
    * Get audio frequency levels for visualizer (0.0 to 1.0)
    */
   public getAudioLevels(): number[] {
-    if (this.analyser) {
+    if (this.analyser && !this.isMuted) {
       const dataArray = new Uint8Array(this.analyser.frequencyBinCount);
       this.analyser.getByteFrequencyData(dataArray);
       const bars: number[] = [];
@@ -221,6 +271,10 @@ class SoundSynthesizer {
         bars.push(Math.min(1, Math.max(0.08, val / 255)));
       }
       return bars;
+    }
+
+    if (this.isMuted) {
+      return new Array(16).fill(0.03);
     }
 
     // Default simulated waveform dynamics if microphone isn't connected

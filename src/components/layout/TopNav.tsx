@@ -3,17 +3,13 @@ import {
   Menu,
   Search,
   Bell,
-  Phone,
-  HelpCircle,
-  Sparkles,
-  Calendar,
-  CheckCircle2,
+  Star,
   CheckCheck,
   Check,
+  X,
+  Phone,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
-import { useCalling } from '../../context/CallingContext';
-import { Badge } from '../common/Badge';
 
 interface TopNavProps {
   setMobileOpen: (open: boolean) => void;
@@ -23,15 +19,15 @@ export const TopNav: React.FC<TopNavProps> = ({ setMobileOpen }) => {
   const {
     leads,
     openLeadModal,
-    tasks,
     notifications,
     unreadNotificationCount,
     markAllNotificationsRead,
     markNotificationRead,
     setActiveScreen,
     setActiveChannelId,
+    userProfile,
   } = useApp();
-  const { startCall } = useCalling();
+
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
@@ -51,83 +47,73 @@ export const TopNav: React.FC<TopNavProps> = ({ setMobileOpen }) => {
     setShowSearchResults(false);
   };
 
-  const handleQuickDial = () => {
-    if (leads.length > 0) {
-      // Pick top urgent lead to dial
-      const topLead = leads.find((l) => l.priority === 'Urgent') || leads[0];
-      startCall({
-        id: topLead.id,
-        name: topLead.name,
-        company: topLead.company,
-        phone: topLead.phone,
-      });
-    }
-  };
-
   return (
-    <header className="sticky top-0 z-30 h-18 bg-ivory/80 backdrop-blur-md border-b border-ivory-border px-4 lg:px-8 flex items-center justify-between">
-      {/* Left side: Hamburger + Search */}
-      <div className="flex items-center gap-4 flex-1 max-w-xl">
+    <header className="sticky top-0 z-30 h-14 bg-[#0B2B20] text-white border-b border-[#082218] px-4 lg:px-6 flex items-center justify-between shadow-xs">
+      {/* Left: Mobile hamburger + OG logo + Compact Search */}
+      <div className="flex items-center gap-3.5 flex-1 max-w-xl">
         <button
           type="button"
           onClick={() => setMobileOpen(true)}
-          className="p-2 rounded-xl text-charcoal hover:bg-ivory-subtle lg:hidden"
+          className="p-1.5 rounded-lg text-gray-300 hover:text-white hover:bg-white/10 lg:hidden"
         >
           <Menu className="w-5 h-5" />
         </button>
 
-        {/* Global Search Bar */}
-        <div className="relative w-full max-w-md">
-          <div className="relative">
-            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-charcoal-muted" />
+        {/* Brand pill */}
+        <div className="flex items-center gap-2 select-none">
+          <span className="w-6 h-6 rounded-lg bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 font-extrabold text-[11px] flex items-center justify-center">
+            OG
+          </span>
+          <span className="font-bold text-sm text-white tracking-tight hidden sm:inline">
+            On-Ground<span className="text-emerald-400">.ai</span>
+          </span>
+        </div>
+
+        {/* Compact Search Bar */}
+        <div className="relative w-full max-w-xs ml-2">
+          <div className="relative flex items-center">
+            <Search className="w-3.5 h-3.5 absolute left-3 text-gray-400 pointer-events-none" />
             <input
               type="text"
-              placeholder="Search leads, phone numbers, companies..."
+              placeholder="Search leads, calls, Pulse..."
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
                 setShowSearchResults(true);
               }}
               onFocus={() => setShowSearchResults(true)}
-              className="w-full pl-10 pr-4 py-2 bg-white border border-ivory-border rounded-2xl text-xs font-medium text-charcoal placeholder-charcoal-muted/70 focus:outline-none focus:border-sage shadow-2xs"
+              className="w-full pl-8 pr-3 py-1.5 bg-[#082218] border border-[#144232] rounded-xl text-xs text-white placeholder-gray-400 focus:outline-hidden focus:border-emerald-500 transition-colors"
             />
           </div>
 
-          {/* Search Results Dropdown */}
+          {/* Search Dropdown */}
           {showSearchResults && searchQuery.trim() && (
-            <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-ivory-border rounded-2xl shadow-xl overflow-hidden z-50 animate-in fade-in zoom-in-95">
-              <div className="p-2 border-b border-ivory-border bg-ivory-subtle text-[11px] font-bold uppercase tracking-wider text-charcoal-muted">
+            <div className="absolute top-full left-0 right-0 mt-1.5 bg-white text-charcoal border border-ivory-border rounded-xl shadow-xl overflow-hidden z-50 animate-in fade-in zoom-in-95">
+              <div className="p-2 bg-ivory-subtle border-b border-ivory-border text-[10px] font-bold uppercase tracking-wider text-charcoal-muted">
                 Matching Leads ({filteredLeads.length})
               </div>
-              <div className="max-h-60 overflow-y-auto">
+              <div className="max-h-56 overflow-y-auto divide-y divide-ivory-border/60">
                 {filteredLeads.length > 0 ? (
                   filteredLeads.map((lead) => (
                     <div
                       key={lead.id}
                       onClick={() => handleSelectLead(lead.id)}
-                      className="p-3 hover:bg-ivory cursor-pointer flex items-center justify-between border-b border-ivory-border/50 last:border-none"
+                      className="p-2.5 hover:bg-ivory cursor-pointer flex items-center justify-between transition-colors"
                     >
-                      <div className="flex items-center gap-3">
-                        <img
-                          src={lead.avatar}
-                          alt={lead.name}
-                          className="w-8 h-8 rounded-xl object-cover"
-                        />
-                        <div>
-                          <p className="text-xs font-bold text-charcoal">{lead.name}</p>
-                          <p className="text-[11px] text-charcoal-muted">
-                            {lead.company} • {lead.phone}
-                          </p>
-                        </div>
+                      <div>
+                        <p className="text-xs font-bold text-charcoal">{lead.name}</p>
+                        <p className="text-[10px] text-charcoal-muted">
+                          {lead.company} · {lead.phone}
+                        </p>
                       </div>
-                      <Badge variant="sage" size="sm">
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
                         {lead.status}
-                      </Badge>
+                      </span>
                     </div>
                   ))
                 ) : (
-                  <div className="p-4 text-center text-xs text-charcoal-muted">
-                    No leads found matching "{searchQuery}"
+                  <div className="p-3 text-center text-xs text-charcoal-muted">
+                    No leads found for "{searchQuery}"
                   </div>
                 )}
               </div>
@@ -136,89 +122,49 @@ export const TopNav: React.FC<TopNavProps> = ({ setMobileOpen }) => {
         </div>
       </div>
 
-      {/* Right side: Quick Call Action + Date + Notifications */}
+      {/* Right: Notifications + Streak / Points + User Avatar */}
       <div className="flex items-center gap-3">
-        {/* Quick Call Action */}
-        <button
-          type="button"
-          onClick={handleQuickDial}
-          className="hidden sm:flex items-center gap-2 px-3.5 py-2 rounded-xl bg-sage hover:bg-sage-hover text-white text-xs font-bold shadow-sm transition-all active:scale-95"
-        >
-          <Phone className="w-3.5 h-3.5 fill-white" />
-          <span>Priority Dial</span>
-        </button>
-
-        {/* Date Display */}
-        <div className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-ivory-border text-xs font-semibold text-charcoal shadow-2xs">
-          <Calendar className="w-3.5 h-3.5 text-sage" />
-          <span>Monday, Oct 19, 2026</span>
-        </div>
-
-        {/* Notifications Popover Toggle */}
+        {/* Notifications */}
         <div className="relative">
           <button
             type="button"
             onClick={() => setNotificationsOpen((prev) => !prev)}
-            className="relative p-2.5 rounded-xl bg-white border border-ivory-border text-charcoal hover:bg-ivory transition-colors shadow-2xs group"
+            className="relative p-1.5 rounded-xl text-gray-300 hover:text-white hover:bg-white/10 transition-colors"
             title="Notifications"
           >
-            <Bell className="w-4 h-4 text-charcoal group-hover:text-forest transition-colors" />
+            <Bell className="w-4 h-4" />
             {unreadNotificationCount > 0 && (
-              <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-gold text-forest-dark font-extrabold text-[10px] flex items-center justify-center border-2 border-white shadow-xs animate-in zoom-in-75">
+              <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-red-500 text-white font-extrabold text-[9px] flex items-center justify-center border border-[#0B2B20]">
                 {unreadNotificationCount}
               </span>
             )}
           </button>
 
-          {/* Invisible Backdrop to close on outside click */}
+          {/* Notification dropdown */}
           {notificationsOpen && (
-            <div
-              className="fixed inset-0 z-40"
-              onClick={() => setNotificationsOpen(false)}
-            />
-          )}
-
-          {/* Notifications Dropdown */}
-          {notificationsOpen && (
-            <div className="absolute right-0 mt-2 w-84 sm:w-92 bg-white border border-ivory-border rounded-2xl shadow-xl overflow-hidden z-50 animate-in fade-in zoom-in-95">
-              {/* Dropdown Header */}
-              <div className="p-3.5 bg-ivory-subtle border-b border-ivory-border flex items-center justify-between">
-                <div className="flex items-center gap-2">
+            <>
+              <div
+                className="fixed inset-0 z-40"
+                onClick={() => setNotificationsOpen(false)}
+              />
+              <div className="absolute right-0 mt-2 w-80 bg-white text-charcoal border border-ivory-border rounded-2xl shadow-2xl overflow-hidden z-50 animate-in fade-in zoom-in-95">
+                <div className="p-3 bg-ivory-subtle border-b border-ivory-border flex items-center justify-between">
                   <span className="text-xs font-bold text-charcoal">Activity & Alerts</span>
-                  {unreadNotificationCount > 0 ? (
-                    <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-gold-light text-gold-text border border-gold-border">
-                      {unreadNotificationCount} new
-                    </span>
-                  ) : (
-                    <span className="text-[10px] font-semibold text-charcoal-muted">All read</span>
-                  )}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      markAllNotificationsRead();
+                    }}
+                    disabled={unreadNotificationCount === 0}
+                    className="text-[11px] font-bold text-emerald-700 hover:underline disabled:opacity-40 disabled:no-underline"
+                  >
+                    Mark all read
+                  </button>
                 </div>
 
-                {/* Mark All Read Button */}
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    markAllNotificationsRead();
-                  }}
-                  disabled={unreadNotificationCount === 0}
-                  className={`text-[11px] font-bold px-2.5 py-1 rounded-lg transition-all flex items-center gap-1 ${
-                    unreadNotificationCount > 0
-                      ? 'text-sage hover:text-white hover:bg-sage active:scale-95 cursor-pointer shadow-2xs'
-                      : 'text-charcoal-muted/50 cursor-not-allowed opacity-60'
-                  }`}
-                  title="Mark all notifications as read"
-                >
-                  <CheckCheck className="w-3.5 h-3.5" />
-                  <span>Mark all read</span>
-                </button>
-              </div>
-
-              {/* Notification Items List */}
-              <div className="divide-y divide-ivory-border text-xs max-h-80 overflow-y-auto">
-                {notifications.length > 0 ? (
-                  notifications.map((notif) => (
+                <div className="max-h-72 overflow-y-auto divide-y divide-ivory-border/60 text-xs">
+                  {notifications.map((notif) => (
                     <div
                       key={notif.id}
                       onClick={() => {
@@ -235,78 +181,56 @@ export const TopNav: React.FC<TopNavProps> = ({ setMobileOpen }) => {
                         }
                         setNotificationsOpen(false);
                       }}
-                      className={`p-3.5 transition-colors cursor-pointer group relative ${
-                        !notif.read
-                          ? 'bg-white hover:bg-ivory/70'
-                          : 'bg-ivory-subtle/30 hover:bg-ivory-subtle text-charcoal-muted'
+                      className={`p-3 cursor-pointer hover:bg-ivory/60 transition-colors ${
+                        !notif.read ? 'bg-emerald-50/40' : ''
                       }`}
                     >
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex items-center gap-1.5 font-bold text-[11px] mb-0.5">
-                          {!notif.read ? (
-                            <span
-                              className={`w-2 h-2 rounded-full shrink-0 ${
-                                notif.priority === 'urgent'
-                                  ? 'bg-red-500 animate-pulse'
-                                  : notif.priority === 'gold'
-                                  ? 'bg-gold animate-pulse'
-                                  : 'bg-sage'
-                              }`}
-                            />
-                          ) : (
-                            <Check className="w-3 h-3 text-emerald-600 shrink-0" />
-                          )}
-                          <span
-                            className={
-                              !notif.read
-                                ? notif.priority === 'urgent'
-                                  ? 'text-red-600'
-                                  : notif.priority === 'gold'
-                                  ? 'text-gold-text'
-                                  : 'text-sage'
-                                : 'text-charcoal-muted'
-                            }
-                          >
-                            {notif.title}
-                          </span>
-                        </div>
-
-                        <span className="text-[10px] font-mono text-charcoal-muted shrink-0">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-bold text-[11px] text-charcoal">
+                          {notif.title}
+                        </span>
+                        <span className="text-[10px] text-charcoal-muted font-mono">
                           {notif.timestamp}
                         </span>
                       </div>
-
-                      <p
-                        className={`text-xs mt-0.5 leading-snug ${
-                          !notif.read ? 'font-semibold text-charcoal' : 'text-charcoal-muted'
-                        }`}
-                      >
+                      <p className="text-[11px] text-charcoal-muted mt-0.5 leading-snug">
                         {notif.message}
                       </p>
-
-                      {notif.value && (
-                        <span className="inline-block mt-1.5 text-[10px] font-mono font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                          Deal Value: {notif.value}
-                        </span>
-                      )}
                     </div>
-                  ))
-                ) : (
-                  <div className="p-6 text-center text-xs text-charcoal-muted">
-                    No notifications at this time.
-                  </div>
-                )}
+                  ))}
+                </div>
               </div>
-
-              {/* Dropdown Footer */}
-              <div className="p-2.5 bg-ivory-subtle border-t border-ivory-border text-center text-[10px] text-charcoal-muted font-medium">
-                {unreadNotificationCount === 0
-                  ? '✓ All alerts marked as read'
-                  : `${unreadNotificationCount} unread alert${unreadNotificationCount === 1 ? '' : 's'}`}
-              </div>
-            </div>
+            </>
           )}
         </div>
+
+        {/* Streak & Points Badge (from Screenshot) */}
+        <div className="hidden sm:flex items-center gap-2 px-2.5 py-1 rounded-xl bg-[#082218] border border-[#144232] text-xs font-bold">
+          <span className="text-emerald-300">76</span>
+          <span className="text-gray-500">·</span>
+          <span className="text-amber-300 flex items-center gap-1">
+            <Star className="w-3 h-3 fill-amber-300" />
+            13
+          </span>
+        </div>
+
+        {/* User Avatar (Clickable for Profile & Settings) */}
+        <button
+          type="button"
+          onClick={() => setActiveScreen('profile')}
+          className="relative p-0.5 rounded-full hover:ring-2 hover:ring-emerald-400 transition-all active:scale-95"
+          title={`${userProfile.name} · Profile & Settings`}
+        >
+          <div className="w-7 h-7 rounded-full bg-emerald-600 border border-emerald-400 text-white font-bold text-xs flex items-center justify-center shadow-xs">
+            {userProfile.name
+              .split(' ')
+              .map((n) => n[0])
+              .join('')
+              .slice(0, 2)
+              .toUpperCase()}
+          </div>
+          <span className="absolute bottom-0 right-0 w-2 h-2 bg-emerald-400 rounded-full border border-[#0B2B20]" />
+        </button>
       </div>
     </header>
   );

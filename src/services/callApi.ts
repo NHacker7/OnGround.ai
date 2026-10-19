@@ -111,3 +111,65 @@ export async function logCallRecordApi(record: any) {
   }
   return null;
 }
+
+export async function fetchLiveCallStatusApi(callSid: string) {
+  try {
+    const res = await fetch(`/api/calls/live-status/${encodeURIComponent(callSid)}`);
+    if (res.ok) {
+      return await res.json();
+    }
+  } catch (err) {
+    // silent fallback
+  }
+  return null;
+}
+
+export async function fetchLiveKitTokenApi(params: {
+  roomName: string;
+  participantName: string;
+  identity?: string;
+}) {
+  try {
+    const res = await fetch('/api/calls/webrtc/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(params),
+    });
+    if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+    return await res.json();
+  } catch (err: any) {
+    return {
+      ok: false,
+      error: err.message,
+    };
+  }
+}
+
+export async function fetchWebRtcStatusApi() {
+  try {
+    const res = await fetch('/api/calls/webrtc/status');
+    if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+    return await res.json();
+  } catch (err: any) {
+    return {
+      ok: false,
+      error: err.message,
+    };
+  }
+}
+
+export async function sendDtmfApi(callSid: string, digit: string) {
+  try {
+    const res = await fetch('/api/calls/send-dtmf', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ callSid, digit }),
+    });
+    if (res.ok) return await res.json();
+  } catch (err) {
+    // silent fallback
+  }
+  return null;
+}
+
+

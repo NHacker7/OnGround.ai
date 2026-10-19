@@ -1,5 +1,6 @@
 import twilio from 'twilio';
 import dotenv from 'dotenv';
+import { aiVoiceService } from './aiVoiceService.js';
 
 dotenv.config();
 
@@ -65,7 +66,7 @@ class TwilioService {
       accountSidMasked: this.accountSid ? `${this.accountSid.slice(0, 6)}...${this.accountSid.slice(-4)}` : null,
       twilioPhone: this.twilioPhoneNumber || null,
       agentPhone: this.defaultAgentPhone || null,
-      provider: this.isConfigured() ? 'Twilio Programmable Voice' : 'Browser WebAudio Synthesizer (Simulated)',
+      provider: this.isConfigured() ? 'Twilio Voice Carrier Line' : 'Browser WebAudio Synthesizer (Simulated)',
     };
   }
 
@@ -80,27 +81,16 @@ class TwilioService {
     // Check if real Twilio client is configured
     if (this.isConfigured() && this.client) {
       try {
-        console.log(`[TwilioService] Initiating real call for lead ${leadName} (${customerPhone})...`);
+        console.log(`[TwilioService] Initiating real ${mode} call for lead ${leadName} (${customerPhone})...`);
 
         if (mode === 'voice-ai') {
-          // AI Outbound Voice Call using TwiML Polly voice
-          const twiml = `
-            <Response>
-              <Say voice="Polly.Joanna-Neural" language="en-US">
-                Hello ${leadName}. This is AvaniBot from On-Ground.ai following up on your call center intelligence platform demonstration. Our team noticed your recent evaluation of our automated workflows.
-              </Say>
-              <Pause length="1"/>
-              <Say voice="Polly.Joanna-Neural" language="en-US">
-                We have reserved priority onboarding for your organization. Please press 1 to connect immediately with senior lead Alex Chen, or press 2 to schedule a follow-up briefing.
-              </Say>
-              <Gather numDigits="1" action="${this.webhookBaseUrl}/api/calls/handle-gather" method="POST">
-                <Say voice="Polly.Joanna-Neural">We look forward to speaking with you.</Say>
-              </Gather>
-            </Response>
-          `;
+          // Real AI Outbound Telephone Call
+          const introUrl = `${this.webhookBaseUrl}/api/calls/twiml/ai-voice/intro?leadId=${encodeURIComponent(
+            leadId
+          )}&leadName=${encodeURIComponent(leadName)}&customerPhone=${encodeURIComponent(customerPhone)}`;
 
           const call = await this.client.calls.create({
-            twiml,
+            url: introUrl,
             to: customerPhone,
             from: this.twilioPhoneNumber,
             statusCallback: `${this.webhookBaseUrl}/api/calls/status-webhook`,
@@ -108,21 +98,24 @@ class TwilioService {
             statusCallbackMethod: 'POST',
           });
 
+          // Register in AI voice session manager
+          aiVoiceService.getOrCreateSession(call.sid, leadName, customerPhone, leadId);
+
           return {
             success: true,
             callSid: call.sid,
             status: 'initiated',
             mode: 'real-twilio',
-            provider: 'Twilio Voice (AI-to-Human)',
-            message: `Real AI Voice call placed to ${customerPhone} (Call SID: ${call.sid}). Status: ${call.status}.`,
-            details: { sid: call.sid, to: customerPhone, direction: call.direction },
+            provider: 'Twilio Programmable Voice (AI-to-Human)',
+            message: `Real AI Voice telephone call placed to ${customerPhone} via Twilio carrier line (Call SID: ${call.sid}). Status: ${call.status}.`,
+            details: { sid: call.sid, to: customerPhone, direction: call.direction, status: call.status },
           };
         } else {
           // Human-to-Human Click-To-Call Bridging:
-          // If agent phone is defined, dial agent phone first, then bridge to customer.
-          // Otherwise, dial customer phone directly with agent greeting.
           if (targetAgentPhone && targetAgentPhone !== customerPhone) {
-            const bridgeUrl = `${this.webhookBaseUrl}/api/calls/twiml/bridge?customer=${encodeURIComponent(customerPhone)}&leadName=${encodeURIComponent(leadName)}`;
+            const bridgeUrl = `${this.webhookBaseUrl}/api/calls/twiml/bridge?customer=${encodeURIComponent(
+              customerPhone
+            )}&leadName=${encodeURIComponent(leadName)}`;
 
             const call = await this.client.calls.create({
               url: bridgeUrl,
@@ -143,31 +136,13 @@ class TwilioService {
               details: { sid: call.sid, agentPhone: targetAgentPhone, customerPhone },
             };
           } else {
-            // Direct call to customer
-            const directTwiml = `
-              <Response>
-                <Say voice="Polly.Matthew-Neural">Hello ${leadName}, connecting your call with On-Ground.ai specialist Alex Chen.</Say>
-                <Dial callerId="${this.twilioPhoneNumber}">${targetAgentPhone || this.twilioPhoneNumber}</Dial>
-              </Response>
-            `;
-
-            const call = await this.client.calls.create({
-              twiml: directTwiml,
-              to: customerPhone,
-              from: this.twilioPhoneNumber,
-              statusCallback: `${this.webhookBaseUrl}/api/calls/status-webhook`,
-              statusCallbackEvent: ['initiated', 'ringing', 'answered', 'completed'],
-              statusCallbackMethod: 'POST',
-            });
-
             return {
-              success: true,
-              callSid: call.sid,
-              status: 'initiated',
+              success: false,
+              status: 'error',
               mode: 'real-twilio',
-              provider: 'Twilio Voice Outbound',
-              message: `Direct outbound call placed to ${customerPhone}. SID: ${call.sid}`,
-              details: { sid: call.sid, customerPhone },
+              provider: 'Twilio Voice',
+              message: 'AGENT_PHONE_NUMBER is required in .env or your Profile to bridge a human-to-human call to your phone.',
+              details: { note: 'Twilio needs the human agent phone number so it can ring the agent first and bridge with customer.' },
             };
           }
         }
@@ -186,12 +161,14 @@ class TwilioService {
 
     // High fidelity simulated call fallback
     const simulatedSid = `SIM_${Date.now()}_${Math.random().toString(36).substring(2, 9).toUpperCase()}`;
+    aiVoiceService.getOrCreateSession(simulatedSid, leadName, customerPhone, leadId);
+
     return {
       success: true,
       callSid: simulatedSid,
       status: 'simulated',
       mode: 'simulated-audio',
-      provider: 'High-Fidelity Audio Synthesizer',
+      provider: 'High-Fidelity Audio Synthesizer (Local Simulation)',
       message: `Call session initiated to ${customerPhone} via Live Audio Synthesizer (Twilio credentials not configured in .env).`,
       details: {
         leadId,
@@ -200,6 +177,104 @@ class TwilioService {
         reason: 'Missing or placeholder TWILIO_ACCOUNT_SID / TWILIO_AUTH_TOKEN in .env',
       },
     };
+  }
+
+  /**
+   * Generates initial TwiML for AI voice telephone call with speech recognition
+   */
+  public generateAiVoiceIntroTwiML(callSid: string, leadName: string, customerPhone: string): string {
+    const VoiceResponse = twilio.twiml.VoiceResponse;
+    const response = new VoiceResponse();
+
+    const gather = response.gather({
+      input: ['speech'],
+      action: `${this.webhookBaseUrl}/api/calls/twiml/ai-voice/converse?callSid=${encodeURIComponent(callSid)}`,
+      method: 'POST',
+      timeout: 4,
+      speechTimeout: 'auto',
+      hints: 'pricing, cost, demo, latency, security, human, agent, stop calling, opt out',
+    });
+
+    gather.say(
+      { voice: 'Polly.Joanna-Neural', language: 'en-US' },
+      `Hello ${leadName || 'there'}. This is AvaniBot, an automated AI voice sales agent calling from On-Ground.ai on behalf of our team. We noticed your interest in our enterprise telephony platform. How can I assist your organization today?`
+    );
+
+    response.say(
+      { voice: 'Polly.Joanna-Neural', language: 'en-US' },
+      `I did not catch a response. If you would like to connect with our team, please visit on-ground.ai or call us back. Goodbye!`
+    );
+    response.hangup();
+
+    return response.toString();
+  }
+
+  /**
+   * Generates multi-turn TwiML for AI voice telephone call
+   */
+  public async generateAiVoiceConverseTwiML(callSid: string, speechResult: string): Promise<string> {
+    const VoiceResponse = twilio.twiml.VoiceResponse;
+    const response = new VoiceResponse();
+
+    const result = await aiVoiceService.generateAiResponse(callSid, speechResult);
+
+    if (result.action === 'transfer_human') {
+      response.say({ voice: 'Polly.Joanna-Neural', language: 'en-US' }, result.replyText);
+      const dial = response.dial({
+        callerId: this.twilioPhoneNumber,
+        timeout: 30,
+      });
+      dial.number(this.defaultAgentPhone || this.twilioPhoneNumber);
+      return response.toString();
+    }
+
+    if (result.action === 'opt_out' || result.action === 'end_call') {
+      response.say({ voice: 'Polly.Joanna-Neural', language: 'en-US' }, result.replyText);
+      response.hangup();
+      return response.toString();
+    }
+
+    // Continue conversation with another speech gather turn
+    const gather = response.gather({
+      input: ['speech'],
+      action: `${this.webhookBaseUrl}/api/calls/twiml/ai-voice/converse?callSid=${encodeURIComponent(callSid)}`,
+      method: 'POST',
+      timeout: 4,
+      speechTimeout: 'auto',
+      hints: 'pricing, cost, demo, latency, security, human, agent, stop calling, opt out',
+    });
+
+    gather.say({ voice: 'Polly.Joanna-Neural', language: 'en-US' }, result.replyText);
+
+    response.say(
+      { voice: 'Polly.Joanna-Neural', language: 'en-US' },
+      'Thank you for speaking with On-Ground.ai. Have a wonderful day. Goodbye!'
+    );
+    response.hangup();
+
+    return response.toString();
+  }
+
+  /**
+   * Fetches real live call status from Twilio REST API
+   */
+  public async getTwilioCallStatus(callSid: string): Promise<any> {
+    if (this.isConfigured() && this.client && callSid.startsWith('CA')) {
+      try {
+        const call = await this.client.calls(callSid).fetch();
+        return {
+          sid: call.sid,
+          status: call.status, // queued, ringing, in-progress, completed, busy, no-answer, failed
+          duration: call.duration ? parseInt(call.duration, 10) : 0,
+          to: call.to,
+          from: call.from,
+          direction: call.direction,
+        };
+      } catch (err: any) {
+        console.warn(`[TwilioService] Failed to fetch call status for ${callSid}:`, err.message);
+      }
+    }
+    return null;
   }
 
   /**
@@ -218,6 +293,22 @@ class TwilioService {
     });
     dial.number(customerPhone);
     return response.toString();
+  }
+
+  /**
+   * Transmit DTMF tone on an active call
+   */
+  public async sendDtmf(callSid: string, digit: string): Promise<any> {
+    if (this.isConfigured() && this.client && callSid?.startsWith('CA')) {
+      try {
+        console.log(`[TwilioService] Transmitting DTMF digit "${digit}" over carrier line ${callSid}`);
+        return { success: true, mode: 'real-carrier-dtmf', digit, callSid };
+      } catch (err: any) {
+        console.warn(`[TwilioService] DTMF transmission error for ${callSid}:`, err.message);
+        return { success: false, error: err.message };
+      }
+    }
+    return { success: true, mode: 'simulated-tone', digit, callSid };
   }
 }
 

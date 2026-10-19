@@ -4,36 +4,22 @@ import {
   PhoneMissed,
   Voicemail,
   Phone,
-  Clock,
-  DollarSign,
   Play,
   Pause,
   CheckCircle2,
-  AlertCircle,
-  ExternalLink,
+  Clock,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useCalling } from '../context/CallingContext';
-import { Badge } from '../components/common/Badge';
 
 export const IncomingCalls: React.FC = () => {
   const { incomingCalls, resolveIncomingCall, openLeadModal } = useApp();
   const { startCall } = useCalling();
   const [playingVoicemailId, setPlayingVoicemailId] = useState<string | null>(null);
-
-  const formatCurrency = (val: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      maximumFractionDigits: 0,
-    }).format(val);
-  };
+  const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'resolved'>('all');
 
   const handleCallback = (call: any) => {
-    // Resolve callback state
     resolveIncomingCall(call.id);
-
-    // Trigger full calling workflow
     startCall({
       id: call.leadId || `temp-${call.id}`,
       name: call.callerName,
@@ -47,162 +33,137 @@ export const IncomingCalls: React.FC = () => {
   };
 
   const pendingCalls = incomingCalls.filter((c) => c.status === 'pending');
-  const resolvedCalls = incomingCalls.filter((c) => c.status === 'resolved');
+  const filteredCalls = incomingCalls.filter((c) => {
+    if (statusFilter === 'pending') return c.status === 'pending';
+    if (statusFilter === 'resolved') return c.status === 'resolved';
+    return true;
+  });
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-300">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="space-y-4 pb-20 animate-in fade-in duration-150">
+      {/* 1. Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold text-charcoal tracking-tight">Incoming Calls</h1>
-            <Badge variant="urgent" size="sm">
+            <h1 className="text-xl font-bold text-charcoal tracking-tight">Incoming</h1>
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-900">
               {pendingCalls.length} Callbacks Required
-            </Badge>
+            </span>
           </div>
-          <p className="text-sm text-charcoal-muted mt-1">
-            Inbound calls and voicemail recordings waiting for agent callback.
+          <p className="text-xs text-stone-500 mt-0.5">
+            Missed inbound calls and voicemails waiting for agent callback.
           </p>
         </div>
 
-        <div className="flex items-center gap-2 text-xs">
-          <span className="px-3 py-1.5 rounded-xl bg-white border border-ivory-border font-semibold text-charcoal">
-            Avg Callback Speed: <span className="font-bold text-emerald-700">6m 12s</span>
-          </span>
+        <div className="flex items-center gap-1.5 bg-white p-1 rounded-xl border border-stone-200 text-xs shadow-2xs self-start sm:self-auto">
+          {(['all', 'pending', 'resolved'] as const).map((filter) => (
+            <button
+              key={filter}
+              type="button"
+              onClick={() => setStatusFilter(filter)}
+              className={`px-3 py-1 rounded-lg font-semibold transition-colors capitalize ${
+                statusFilter === filter
+                  ? 'bg-stone-900 text-white shadow-2xs'
+                  : 'text-stone-600 hover:bg-stone-50'
+              }`}
+            >
+              {filter}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* Inbound Call Cards Stream */}
-      <div className="space-y-4">
-        {incomingCalls.map((item) => {
-          const isResolved = item.status === 'resolved';
-          const isPlaying = playingVoicemailId === item.id;
+      {/* 2. Clean List */}
+      <div className="bg-white rounded-2xl border border-stone-200 shadow-xs divide-y divide-stone-100 overflow-hidden text-xs">
+        {filteredCalls.map((call) => {
+          const isPending = call.status === 'pending';
 
           return (
             <div
-              key={item.id}
-              className={`p-6 rounded-3xl border transition-all ${
-                isResolved
-                  ? 'bg-white/60 border-ivory-border opacity-70'
-                  : 'bg-white border-ivory-border shadow-soft hover:shadow-card'
-              }`}
+              key={call.id}
+              className="p-3.5 sm:p-4 hover:bg-stone-50/60 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3"
             >
-              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                {/* Caller Info */}
-                <div className="flex items-start gap-4">
-                  <div
-                    className={`p-3 rounded-2xl ${
-                      item.reason === 'Missed Call'
-                        ? 'bg-rose-50 text-rose-600 border border-rose-200'
-                        : 'bg-sage-light text-sage-text border border-sage-border'
-                    }`}
-                  >
-                    {item.reason === 'Missed Call' ? (
-                      <PhoneMissed className="w-6 h-6" />
-                    ) : (
-                      <Voicemail className="w-6 h-6" />
-                    )}
-                  </div>
-
-                  <div>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <h3 className="text-base font-bold text-charcoal">{item.callerName}</h3>
-                      <Badge
-                        variant={item.priority === 'Urgent' ? 'urgent' : 'gold'}
-                        size="sm"
-                      >
-                        {item.priority}
-                      </Badge>
-                      <Badge variant="sage" size="sm">
-                        {item.reason}
-                      </Badge>
-                    </div>
-
-                    <p className="text-xs text-charcoal-muted mt-1">
-                      {item.company} • Phone:{' '}
-                      <span className="font-mono font-bold text-sage-text">{item.phone}</span>
-                    </p>
-
-                    <div className="flex items-center gap-4 text-xs text-charcoal-muted mt-2">
-                      <span className="flex items-center gap-1 font-mono">
-                        <Clock className="w-3.5 h-3.5 text-sage" />
-                        {item.timestamp}
-                      </span>
-                      <span className="flex items-center gap-1 font-semibold text-charcoal">
-                        <DollarSign className="w-3.5 h-3.5 text-gold" />
-                        Deal Value: {formatCurrency(item.potentialValue)}
-                      </span>
-                    </div>
-                  </div>
+              <div className="flex items-start gap-3 min-w-0">
+                <div
+                  className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${
+                    isPending ? 'bg-red-100 text-red-600' : 'bg-emerald-100 text-emerald-700'
+                  }`}
+                >
+                  {call.reason === 'Voicemail Left' ? (
+                    <Voicemail className="w-4 h-4" />
+                  ) : (
+                    <PhoneMissed className="w-4 h-4" />
+                  )}
                 </div>
 
-                {/* Actions & Callback Button */}
-                <div className="flex items-center gap-3 self-end lg:self-center">
-                  {item.leadId && (
-                    <button
-                      type="button"
-                      onClick={() => openLeadModal(item.leadId!)}
-                      className="px-3 py-2 rounded-xl bg-ivory-subtle border border-ivory-border text-xs font-semibold text-charcoal hover:bg-ivory transition-colors flex items-center gap-1.5"
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span
+                      onClick={() => call.leadId && openLeadModal(call.leadId)}
+                      className="font-bold text-charcoal hover:text-emerald-700 cursor-pointer"
                     >
-                      <ExternalLink className="w-3.5 h-3.5" />
-                      <span>View Lead</span>
-                    </button>
-                  )}
+                      {call.callerName}
+                    </span>
+                    <span className="text-[10px] text-stone-400 font-mono">
+                      {call.phone} · {call.timestamp}
+                    </span>
+                    <span
+                      className={`text-[9px] font-bold px-1.5 py-0.2 rounded-full ${
+                        isPending ? 'bg-amber-100 text-amber-900' : 'bg-stone-100 text-stone-600'
+                      }`}
+                    >
+                      {call.reason}
+                    </span>
+                  </div>
 
-                  <button
-                    type="button"
-                    onClick={() => handleCallback(item)}
-                    className="px-4 py-2.5 rounded-xl bg-sage hover:bg-sage-hover text-white text-xs font-bold transition-all shadow-md flex items-center gap-2 active:scale-95"
-                  >
-                    <Phone className="w-4 h-4 fill-white" />
-                    <span>Callback Now</span>
-                  </button>
+                  <p className="text-[11px] text-stone-500 mt-0.5">
+                    {call.company} · Potential Value: <strong className="text-charcoal">₹{call.potentialValue.toLocaleString()}</strong>
+                  </p>
+
+                  {/* Voicemail Snippet */}
+                  {call.voicemailTranscript && (
+                    <div className="mt-1.5 p-2 rounded-lg bg-stone-50 border border-stone-200 text-[11px] text-stone-600 flex items-center justify-between gap-2 max-w-xl">
+                      <p className="truncate italic">"{call.voicemailTranscript}"</p>
+                      <button
+                        type="button"
+                        onClick={() => toggleVoicemailAudio(call.id)}
+                        className="text-stone-500 hover:text-emerald-700 shrink-0 font-bold flex items-center gap-1 text-[10px]"
+                      >
+                        {playingVoicemailId === call.id ? (
+                          <>
+                            <Pause className="w-3 h-3" />
+                            <span>Stop</span>
+                          </>
+                        ) : (
+                          <>
+                            <Play className="w-3 h-3" />
+                            <span>Play ({call.voicemailDuration || '0:30'})</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
 
-              {/* Voicemail Audio Player & Transcript Preview */}
-              {item.voicemailTranscript && (
-                <div className="mt-4 pt-4 border-t border-ivory-border/70 bg-ivory-subtle/50 rounded-2xl p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2 text-xs font-bold text-charcoal">
-                      <Voicemail className="w-4 h-4 text-sage" />
-                      <span>AI Transcribed Voicemail ({item.voicemailDuration})</span>
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() => toggleVoicemailAudio(item.id)}
-                      className="flex items-center gap-1.5 text-xs font-bold text-sage hover:text-sage-hover"
-                    >
-                      {isPlaying ? (
-                        <>
-                          <Pause className="w-3.5 h-3.5 fill-current" />
-                          <span>Pause Audio</span>
-                        </>
-                      ) : (
-                        <>
-                          <Play className="w-3.5 h-3.5 fill-current" />
-                          <span>Play Audio Recording</span>
-                        </>
-                      )}
-                    </button>
-                  </div>
-
-                  {/* Simulated Audio Bar while playing */}
-                  {isPlaying && (
-                    <div className="my-2 p-2 bg-forest-surface rounded-xl flex items-center gap-2 animate-in fade-in">
-                      <div className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-                      <span className="text-[11px] text-emerald-200 font-mono">
-                        Playing voicemail stream (0:14 / {item.voicemailDuration})
-                      </span>
-                    </div>
-                  )}
-
-                  <p className="text-xs text-charcoal-muted leading-relaxed italic bg-white p-3 rounded-xl border border-ivory-border">
-                    {item.voicemailTranscript}
-                  </p>
-                </div>
-              )}
+              {/* Action */}
+              <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
+                {isPending ? (
+                  <button
+                    type="button"
+                    onClick={() => handleCallback(call)}
+                    className="px-3.5 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-2xs transition-all flex items-center gap-1.5 active:scale-95"
+                  >
+                    <Phone className="w-3.5 h-3.5" />
+                    <span>Call Back</span>
+                  </button>
+                ) : (
+                  <span className="text-[11px] text-stone-400 flex items-center gap-1 font-semibold">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Resolved</span>
+                  </span>
+                )}
+              </div>
             </div>
           );
         })}

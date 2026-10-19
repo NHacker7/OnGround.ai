@@ -3,6 +3,7 @@ import { Sidebar } from './Sidebar';
 import { TopNav } from './TopNav';
 import { LeadDetailsModal } from '../leads/LeadDetailsModal';
 import { ActiveCallConsole } from '../calling/ActiveCallConsole';
+import { FloatingCallBar } from '../calling/FloatingCallBar';
 
 export const Shell: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -13,15 +14,18 @@ export const Shell: React.FC<{ children: React.ReactNode }> = ({ children }) => 
       <Sidebar mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />
 
       {/* Main Wrapper */}
-      <div className="flex-1 flex flex-col min-w-0 lg:pl-64">
+      <div className="flex-1 flex flex-col min-w-0 lg:pl-56">
         {/* Sticky Top Navigation */}
         <TopNav setMobileOpen={setMobileOpen} />
 
         {/* Dynamic Screen Content */}
-        <main className="flex-1 p-4 lg:p-8 max-w-7xl mx-auto w-full">
+        <main className="flex-1 p-4 lg:p-6 max-w-6xl mx-auto w-full">
           {children}
         </main>
       </div>
+
+      {/* Floating Bottom Bar */}
+      <FloatingCallBar />
 
       {/* Modals & Overlays */}
       <LeadDetailsModal />

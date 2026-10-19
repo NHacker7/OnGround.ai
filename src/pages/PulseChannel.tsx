@@ -1,20 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
   ArrowLeft,
-  Hash,
-  Users,
-  Send,
-  Paperclip,
   Smile,
-  Sparkles,
-  Bot,
-  AlertCircle,
-  CheckCircle2,
+  Send,
+  Pin,
+  Edit3,
+  Check,
+  Clock,
   ExternalLink,
-  ChevronDown,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
-import { Badge } from '../components/common/Badge';
 
 export const PulseChannel: React.FC = () => {
   const {
@@ -24,13 +19,17 @@ export const PulseChannel: React.FC = () => {
     sendChannelMessage,
     handlePinnedAction,
     openLeadModal,
+    userProfile,
   } = useApp();
 
   const [inputMessage, setInputMessage] = useState('');
+  const [pinnedAnswer, setPinnedAnswer] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const channel =
-    pulseChannels.find((c) => c.id === activeChannelId) || pulseChannels[0];
+    pulseChannels.find((c) => c.id === activeChannelId) ||
+    pulseChannels.find((c) => c.name === 'callcentre-team') ||
+    pulseChannels[0];
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -47,236 +46,254 @@ export const PulseChannel: React.FC = () => {
     setInputMessage('');
   };
 
-  const handleQuickSuggestion = (text: string) => {
-    sendChannelMessage(channel.id, text);
+  const handlePinnedCustomSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!pinnedAnswer.trim()) return;
+    handlePinnedAction(channel.id, `custom:${pinnedAnswer.trim()}`);
+    setPinnedAnswer('');
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-8.5rem)] max-h-[820px] bg-white rounded-3xl border border-ivory-border shadow-soft overflow-hidden animate-in fade-in duration-300">
-      {/* Channel Top Header */}
-      <div className="px-6 py-4 bg-ivory-subtle border-b border-ivory-border flex items-center justify-between">
-        <div className="flex items-center gap-4">
+    <div className="flex flex-col h-[calc(100vh-8rem)] max-h-[820px] bg-white rounded-2xl border border-stone-200 shadow-xs overflow-hidden animate-in fade-in duration-150">
+      {/* 1. Deep Purple Channel Header */}
+      <div className="px-5 py-3 bg-[#3b0764] text-white flex items-center justify-between shadow-xs shrink-0">
+        <div className="flex items-center gap-3">
           <button
             type="button"
             onClick={() => setActiveScreen('pulse')}
-            className="p-2 rounded-xl bg-white border border-ivory-border text-charcoal hover:bg-ivory transition-colors flex items-center gap-1.5 text-xs font-bold shadow-2xs"
+            className="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 active:scale-95 text-white transition-all flex items-center justify-center text-xs font-bold"
+            title="Back to Pulse Home"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span className="hidden sm:inline">Pulse Hub</span>
           </button>
 
-          <div>
-            <div className="flex items-center gap-2">
-              <Hash className="w-5 h-5 text-sage" />
-              <h1 className="text-base font-bold text-charcoal tracking-tight">
-                {channel.name}
-              </h1>
-              <Badge variant="sage" size="sm">
-                {channel.category}
-              </Badge>
-            </div>
-            <p className="text-xs text-charcoal-muted mt-0.5">{channel.topic}</p>
+          <div className="flex items-center gap-1.5 font-bold text-sm text-white">
+            <span className="text-purple-300">#</span>
+            <h1>{channel.name}</h1>
           </div>
-        </div>
-
-        <div className="flex items-center gap-2 text-xs font-semibold text-charcoal-muted">
-          <Users className="w-4 h-4 text-sage" />
-          <span>{channel.membersCount} active agents</span>
         </div>
       </div>
 
-      {/* Pinned "Needs your input" Action Card */}
+      {/* 2. Pinned "Needs your input" Card */}
       {channel.pinnedAction && (
-        <div className="p-4 bg-gold-light/60 border-b border-gold-border/70 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 animate-in slide-in-from-top-2">
-          <div className="flex items-start gap-3">
-            <div className="p-2 rounded-xl bg-gold text-white shrink-0 mt-0.5 shadow-sm">
-              <Sparkles className="w-4 h-4" />
+        <div className="p-4 bg-amber-50/70 border-b border-amber-200/80 space-y-2.5 shrink-0">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5 text-[11px] font-bold text-amber-900">
+              <Edit3 className="w-3.5 h-3.5 text-amber-700" />
+              <span>Needs your input</span>
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded bg-amber-200/70 text-amber-900 text-[9px] font-bold">
+                <Pin className="w-2.5 h-2.5" />
+                pinned
+              </span>
             </div>
 
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-extrabold uppercase tracking-wider text-gold-text">
-                  Needs Your Decision
-                </span>
-                <span className="text-xs text-charcoal-muted">•</span>
-                <button
-                  type="button"
-                  onClick={() => openLeadModal(channel.pinnedAction!.leadId)}
-                  className="text-xs font-bold text-charcoal hover:text-sage flex items-center gap-1 underline decoration-dashed"
-                >
-                  <span>{channel.pinnedAction.leadName}</span>
-                  <ExternalLink className="w-3 h-3" />
-                </button>
-              </div>
-
-              <h4 className="text-xs font-bold text-charcoal mt-0.5">
-                {channel.pinnedAction.title}
-              </h4>
-              <p className="text-[11px] text-charcoal-muted leading-relaxed mt-0.5">
-                {channel.pinnedAction.description}
-              </p>
-            </div>
+            {channel.pinnedAction.leadId && (
+              <button
+                type="button"
+                onClick={() => openLeadModal(channel.pinnedAction!.leadId!)}
+                className="text-[10px] font-bold text-purple-700 hover:underline flex items-center gap-0.5"
+              >
+                <span>View File</span>
+                <ExternalLink className="w-2.5 h-2.5" />
+              </button>
+            )}
           </div>
 
-          {/* Functional Buttons */}
-          <div className="flex items-center gap-2 shrink-0 self-end md:self-center">
-            {channel.pinnedAction.resolved ? (
-              <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-800 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-300">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                <span>{channel.pinnedAction.resolutionText}</span>
-              </div>
-            ) : (
-              <>
-                <button
-                  type="button"
-                  onClick={() =>
-                    handlePinnedAction(channel.id, channel.pinnedAction!.secondaryButton.actionId)
-                  }
-                  className="px-3 py-2 rounded-xl bg-white border border-gold-border text-xs font-bold text-charcoal hover:bg-gold-light transition-colors shadow-2xs active:scale-95"
-                >
-                  {channel.pinnedAction.secondaryButton.label}
-                </button>
+          <div>
+            <h3 className="text-xs font-bold text-charcoal">
+              {channel.pinnedAction.title}
+            </h3>
+            <p className="text-[11px] text-stone-500 mt-0.5">
+              {channel.pinnedAction.description}
+            </p>
+          </div>
 
+          {channel.pinnedAction.resolved ? (
+            <div className="p-2 rounded-lg bg-emerald-100 text-emerald-900 text-[11px] font-bold flex items-center gap-1.5">
+              <span>✓</span>
+              <span>{channel.pinnedAction.resolutionText}</span>
+            </div>
+          ) : (
+            <div className="space-y-2 pt-0.5">
+              <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() =>
                     handlePinnedAction(channel.id, channel.pinnedAction!.primaryButton.actionId)
                   }
-                  className="px-4 py-2 rounded-xl bg-forest hover:bg-forest-hover text-white text-xs font-bold shadow-sm transition-all active:scale-95"
+                  className="px-3 py-1 rounded-md bg-stone-900 hover:bg-stone-800 text-white text-[11px] font-bold shadow-2xs active:scale-95 transition-all"
                 >
                   {channel.pinnedAction.primaryButton.label}
                 </button>
-              </>
-            )}
-          </div>
+                <button
+                  type="button"
+                  onClick={() =>
+                    handlePinnedAction(channel.id, channel.pinnedAction!.secondaryButton.actionId)
+                  }
+                  className="px-3 py-1 rounded-md bg-white border border-stone-300 hover:bg-stone-100 text-charcoal text-[11px] font-bold shadow-2xs active:scale-95 transition-all"
+                >
+                  {channel.pinnedAction.secondaryButton.label}
+                </button>
+              </div>
+
+              {/* Single line "Or type your answer" */}
+              <form onSubmit={handlePinnedCustomSubmit} className="flex items-center gap-2 pt-0.5">
+                <input
+                  type="text"
+                  value={pinnedAnswer}
+                  onChange={(e) => setPinnedAnswer(e.target.value)}
+                  placeholder="Or type your answer"
+                  className="flex-1 px-3 py-1.5 text-xs rounded-lg bg-white border border-stone-300 text-charcoal placeholder-stone-400 focus:outline-hidden focus:border-purple-600 focus:ring-1 focus:ring-purple-600"
+                />
+                <button
+                  type="submit"
+                  disabled={!pinnedAnswer.trim()}
+                  className="px-3 py-1.5 rounded-lg bg-[#b88628] hover:bg-[#9a6e1e] disabled:opacity-40 text-white text-xs font-bold transition-all shadow-2xs"
+                >
+                  Send
+                </button>
+              </form>
+            </div>
+          )}
         </div>
       )}
 
-      {/* Messages Scroll Area */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-ivory/30">
-        <div className="text-center my-2">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-charcoal-muted px-3 py-1 rounded-full bg-white border border-ivory-border shadow-2xs">
-            Today, October 19, 2026
-          </span>
+      {/* Date Divider */}
+      <div className="flex items-center justify-center my-3 shrink-0">
+        <span className="text-[11px] text-stone-400 font-medium">
+          Today · Call Centre Team
+        </span>
+      </div>
+
+      {/* 3. Messages Feed */}
+      <div className="flex-1 overflow-y-auto px-5 py-2 space-y-3.5">
+        {/* Message 1: Sunita Rao - Stakeholders */}
+        <div className="flex items-start gap-2.5 max-w-xl">
+          <div className="w-7 h-7 rounded-md bg-amber-100 text-amber-900 font-bold text-xs flex items-center justify-center shrink-0 border border-amber-200">
+            SR
+          </div>
+          <div className="space-y-1">
+            <div className="flex items-center gap-1.5 text-[11px]">
+              <span className="font-bold text-charcoal">Sunita Rao</span>
+              <span className="text-stone-400">2:05pm</span>
+            </div>
+            <div className="p-2.5 rounded-lg bg-stone-50 border border-stone-200 text-xs text-charcoal">
+              👥 <strong>STAKEHOLDERS:</strong> @You (Arvind R.), whole call centre shift
+            </div>
+          </div>
         </div>
 
-        {channel.messages.map((msg) => {
-          return (
+        {/* Message 2: Sunita Rao - Issue Definition */}
+        <div className="flex items-start gap-2.5 max-w-xl">
+          <div className="w-7 h-7 rounded-md bg-amber-100 text-amber-900 font-bold text-xs flex items-center justify-center shrink-0 border border-amber-200">
+            SR
+          </div>
+          <div className="space-y-1">
+            <div className="flex items-center gap-1.5 text-[11px]">
+              <span className="font-bold text-charcoal">Sunita Rao</span>
+              <span className="text-stone-400">2:05pm</span>
+            </div>
+            <div className="p-2.5 rounded-lg bg-stone-50 border border-stone-200 text-xs text-charcoal">
+              📄 <strong>ISSUE DEFINITION:</strong> Greeting-in-first-10s QA score is at 71% this week, below our 85% target
+            </div>
+          </div>
+        </div>
+
+        {/* Message 3: Sunita Rao - Suggested Resolution */}
+        <div className="flex items-start gap-2.5 max-w-xl">
+          <div className="w-7 h-7 rounded-md bg-amber-100 text-amber-900 font-bold text-xs flex items-center justify-center shrink-0 border border-amber-200">
+            SR
+          </div>
+          <div className="space-y-1">
+            <div className="flex items-center gap-1.5 text-[11px]">
+              <span className="font-bold text-charcoal">Sunita Rao</span>
+              <span className="text-stone-400">2:05pm</span>
+            </div>
+            <div className="p-2.5 rounded-lg bg-stone-50 border border-stone-200 text-xs text-charcoal">
+              💡 <strong>SUGGESTED RESOLUTION:</strong> Let's push that up 💪 — open every call with the greeting script. I'll check back Friday
+            </div>
+          </div>
+        </div>
+
+        {/* Message 4: Arvind R. (You) - Right aligned green bubble */}
+        <div className="flex flex-col items-end gap-1">
+          <span className="text-[10px] text-stone-400 mr-1">You 2:10pm</span>
+          <div className="px-3.5 py-2 rounded-2xl rounded-tr-xs bg-emerald-600 text-white text-xs font-medium max-w-md shadow-xs">
+            On it! Will make sure I open every call with the greeting script 🙌
+          </div>
+        </div>
+
+        {/* Message 5: Sunita Rao - Reply */}
+        <div className="flex items-start gap-2.5 max-w-xl">
+          <div className="w-7 h-7 rounded-md bg-amber-100 text-amber-900 font-bold text-xs flex items-center justify-center shrink-0 border border-amber-200">
+            SR
+          </div>
+          <div className="space-y-1">
+            <div className="flex items-center gap-1.5 text-[11px]">
+              <span className="font-bold text-charcoal">Sunita Rao</span>
+              <span className="text-stone-400">2:14pm</span>
+            </div>
+            <div className="p-2.5 rounded-lg bg-stone-50 border border-stone-200 text-xs text-charcoal">
+              Great attitude Arvind ⭐
+            </div>
+          </div>
+        </div>
+
+        {/* Dynamic extra messages */}
+        {channel.messages
+          .filter((m) => !m.content.includes('STAKEHOLDERS:') && !m.content.includes('On it!') && !m.content.includes('Great attitude Arvind'))
+          .map((msg) => (
             <div
               key={msg.id}
-              className={`flex items-start gap-3 ${
-                msg.isCurrentUser ? 'flex-row-reverse' : 'flex-row'
-              }`}
+              className={`flex flex-col ${msg.isCurrentUser ? 'items-end' : 'items-start'}`}
             >
-              <img
-                src={msg.senderAvatar}
-                alt={msg.senderName}
-                className="w-8 h-8 rounded-xl object-cover shrink-0 border border-ivory-border shadow-2xs"
-              />
-
+              <span className="text-[10px] text-stone-400 mx-1">
+                {msg.isCurrentUser ? 'You' : msg.senderName} {msg.timestamp}
+              </span>
               <div
-                className={`flex flex-col max-w-lg ${
-                  msg.isCurrentUser ? 'items-end' : 'items-start'
+                className={`p-2.5 rounded-xl text-xs max-w-md ${
+                  msg.isCurrentUser
+                    ? 'bg-emerald-600 text-white'
+                    : 'bg-stone-50 border border-stone-200 text-charcoal'
                 }`}
               >
-                <div className="flex items-center gap-2 mb-1 px-1">
-                  <span className="text-xs font-bold text-charcoal">{msg.senderName}</span>
-                  {msg.isAi && (
-                    <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-sage-light text-sage-text border border-sage-border">
-                      AI Agent
-                    </span>
-                  )}
-                  {msg.badge && (
-                    <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-gold-light text-gold-text border border-gold-border">
-                      {msg.badge}
-                    </span>
-                  )}
-                  <span className="text-[10px] text-charcoal-muted font-mono">{msg.timestamp}</span>
-                </div>
-
-                <div
-                  className={`p-3.5 rounded-2xl text-xs leading-relaxed shadow-2xs ${
-                    msg.isCurrentUser
-                      ? 'bg-forest text-white rounded-tr-none'
-                      : msg.isAi
-                      ? 'bg-white border border-sage-border/80 text-charcoal rounded-tl-none'
-                      : 'bg-white border border-ivory-border text-charcoal rounded-tl-none'
-                  }`}
-                >
-                  {msg.content}
-                </div>
+                {msg.content}
               </div>
             </div>
-          );
-        })}
+          ))}
+
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Suggested Quick Prompts */}
-      <div className="px-6 py-2 bg-ivory-subtle border-t border-ivory-border flex items-center gap-2 overflow-x-auto text-xs">
-        <span className="text-[10px] font-bold uppercase tracking-wider text-charcoal-muted shrink-0">
-          Quick Prompts:
-        </span>
-        <button
-          type="button"
-          onClick={() => handleQuickSuggestion('AvaniBot, summarize key objections from today')}
-          className="px-2.5 py-1 rounded-lg bg-white border border-ivory-border text-charcoal hover:text-sage text-[11px] font-semibold whitespace-nowrap shadow-2xs"
-        >
-          Summarize Objections
-        </button>
-        <button
-          type="button"
-          onClick={() => handleQuickSuggestion('What is the current talk-track against Talkdesk pricing?')}
-          className="px-2.5 py-1 rounded-lg bg-white border border-ivory-border text-charcoal hover:text-sage text-[11px] font-semibold whitespace-nowrap shadow-2xs"
-        >
-          Talkdesk Rebuttal
-        </button>
-        <button
-          type="button"
-          onClick={() => handleQuickSuggestion('Confirming Marcus Vance call moved to 2:30 PM')}
-          className="px-2.5 py-1 rounded-lg bg-white border border-ivory-border text-charcoal hover:text-sage text-[11px] font-semibold whitespace-nowrap shadow-2xs"
-        >
-          Confirm Marcus Time
-        </button>
+      {/* 4. Bottom Message Composer */}
+      <div className="p-3 bg-white border-t border-stone-200 shrink-0">
+        <form onSubmit={handleSendMessage} className="relative flex items-center">
+          <input
+            type="text"
+            value={inputMessage}
+            onChange={(e) => setInputMessage(e.target.value)}
+            placeholder={`Message #${channel.name}...`}
+            className="w-full py-2.5 pl-4 pr-16 bg-stone-50 border border-stone-200 rounded-xl text-xs text-charcoal placeholder-stone-400 focus:outline-hidden focus:bg-white focus:border-purple-600 focus:ring-1 focus:ring-purple-600"
+          />
+          <div className="absolute right-2.5 flex items-center gap-1.5">
+            <button
+              type="button"
+              className="p-1 rounded-md text-amber-500 hover:text-amber-600"
+              title="Add Emoji"
+            >
+              <Smile className="w-4 h-4" />
+            </button>
+            <button
+              type="submit"
+              disabled={!inputMessage.trim()}
+              className="p-1.5 rounded-lg bg-purple-700 hover:bg-purple-800 disabled:opacity-40 text-white transition-all shadow-2xs"
+              title="Send"
+            >
+              <Send className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </form>
       </div>
-
-      {/* Message Input Field */}
-      <form
-        onSubmit={handleSendMessage}
-        className="p-4 bg-white border-t border-ivory-border flex items-center gap-3"
-      >
-        <button
-          type="button"
-          className="p-2 text-charcoal-muted hover:text-charcoal hover:bg-ivory rounded-xl transition-colors"
-          title="Attach file"
-        >
-          <Paperclip className="w-4 h-4" />
-        </button>
-
-        <input
-          type="text"
-          value={inputMessage}
-          onChange={(e) => setInputMessage(e.target.value)}
-          placeholder={`Message #${channel.name} or prompt AvaniBot...`}
-          className="flex-1 py-2 px-3 bg-ivory-subtle border border-ivory-border rounded-xl text-xs font-medium text-charcoal placeholder-charcoal-muted/70 focus:outline-none focus:border-sage"
-        />
-
-        <button
-          type="button"
-          className="p-2 text-charcoal-muted hover:text-charcoal hover:bg-ivory rounded-xl transition-colors"
-          title="Emoji"
-        >
-          <Smile className="w-4 h-4" />
-        </button>
-
-        <button
-          type="submit"
-          className="px-4 py-2 rounded-xl bg-sage hover:bg-sage-hover text-white text-xs font-bold transition-all shadow-sm flex items-center gap-1.5 active:scale-95"
-        >
-          <span>Send</span>
-          <Send className="w-3.5 h-3.5" />
-        </button>
-      </form>
     </div>
   );
 };

@@ -1,16 +1,14 @@
 import React from 'react';
 import {
   LayoutDashboard,
+  CalendarCheck,
   PhoneCall,
   PhoneIncoming,
   History,
   CalendarDays,
   Sparkles,
-  Radio,
-  Sliders,
-  LogOut,
-  ChevronRight,
   Headphones,
+  Settings,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { ScreenId } from '../../types';
@@ -28,11 +26,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, setMobileOpen }) =
 
   const navItems: { id: ScreenId; label: string; icon: any; badge?: number | string }[] = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'calls', label: 'Calls to Make', icon: PhoneCall, badge: 8 },
+    { id: 'plan', label: 'Plan', icon: CalendarCheck },
+    { id: 'calls', label: 'Calls to make', icon: PhoneCall, badge: 5 },
     { id: 'incoming', label: 'Incoming', icon: PhoneIncoming, badge: totalUnreadIncoming > 0 ? totalUnreadIncoming : undefined },
-    { id: 'recent', label: 'Recent Calls', icon: History },
+    { id: 'recent', label: 'Recent', icon: History },
+    { id: 'practice', label: 'Practise a call', icon: Headphones },
     { id: 'calendar', label: 'Calendar', icon: CalendarDays },
-    { id: 'pulse', label: 'Pulse Intelligence', icon: Sparkles, badge: totalUnreadPulse > 0 ? `${totalUnreadPulse} new` : 'AI' },
+    { id: 'pulse', label: 'Pulse', icon: Sparkles, badge: totalUnreadPulse > 0 ? `${totalUnreadPulse} new` : undefined },
   ];
 
   const handleNavClick = (screen: ScreenId) => {
@@ -45,66 +45,60 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, setMobileOpen }) =
       {/* Mobile Backdrop */}
       {mobileOpen && (
         <div
-          className="fixed inset-0 z-40 bg-forest-dark/70 backdrop-blur-xs lg:hidden"
+          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-xs lg:hidden"
           onClick={() => setMobileOpen(false)}
         />
       )}
 
       {/* Sidebar Container */}
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-40 w-64 bg-forest text-ivory flex flex-col justify-between border-r border-forest-border transition-transform duration-200 ease-in-out lg:translate-x-0 ${
+        className={`fixed top-0 bottom-0 left-0 z-40 w-56 bg-[#082218] text-white flex flex-col justify-between border-r border-[#0d3326] transition-transform duration-200 ease-in-out lg:translate-x-0 ${
           mobileOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        {/* Brand / Logo */}
         <div>
-          <div className="h-18 px-6 flex items-center gap-3 border-b border-forest-border/80">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-sage to-forest-light flex items-center justify-center shadow-md border border-emerald-500/30">
-              <Headphones className="w-5 h-5 text-white" />
+          {/* Logo / Brand Header */}
+          <div className="h-14 px-5 flex items-center gap-2.5 border-b border-[#0d3326]">
+            <div className="w-7 h-7 rounded-lg bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-emerald-300 font-extrabold text-xs">
+              OG
             </div>
             <div>
-              <div className="flex items-center gap-1.5">
-                <span className="font-extrabold text-base tracking-tight text-white">
-                  On-Ground<span className="text-gold-light">.ai</span>
-                </span>
-                <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.2 rounded-md bg-forest-border text-emerald-300">
-                  PRO
-                </span>
-              </div>
-              <p className="text-[11px] text-gray-400 font-medium">Enterprise Telephony Hub</p>
+              <span className="font-bold text-sm tracking-tight text-white">
+                On-Ground<span className="text-emerald-400">.ai</span>
+              </span>
             </div>
-          </div>
-
-          {/* Telephony Carrier Status Bar */}
-          <div className="mx-4 my-3 px-3.5 py-2 rounded-xl bg-forest-surface border border-forest-border flex items-center justify-between text-xs">
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-emerald-200 font-medium text-[11px]">SIP Voice Engine</span>
-            </div>
-            <span className="text-[10px] font-mono text-gray-400">99.99%</span>
           </div>
 
           {/* Navigation Links */}
-          <nav className="px-3 py-2 space-y-1">
+          <nav className="p-3 space-y-1">
             {navItems.map((item) => {
               const Icon = item.icon;
-              const isActive = activeScreen === item.id || (item.id === 'pulse' && activeScreen === 'pulse-channel');
+              const isPulse = item.id === 'pulse';
+              const isActive =
+                activeScreen === item.id ||
+                (isPulse && activeScreen === 'pulse-channel');
 
               return (
                 <button
                   key={item.id}
                   type="button"
                   onClick={() => handleNavClick(item.id)}
-                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all group ${
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all group ${
                     isActive
-                      ? 'bg-sage text-white shadow-sm font-bold'
-                      : 'text-gray-300 hover:bg-forest-hover hover:text-white'
+                      ? isPulse
+                        ? 'bg-purple-800 text-white font-bold shadow-xs'
+                        : 'bg-[#144b36] text-white font-bold shadow-xs'
+                      : 'text-gray-300 hover:bg-[#0f3829] hover:text-white'
                   }`}
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2.5">
                     <Icon
-                      className={`w-4 h-4 transition-transform group-hover:scale-110 ${
-                        isActive ? 'text-white' : 'text-emerald-300/80 group-hover:text-white'
+                      className={`w-4 h-4 transition-transform group-hover:scale-105 ${
+                        isActive
+                          ? isPulse
+                            ? 'text-purple-200'
+                            : 'text-emerald-300'
+                          : 'text-gray-400 group-hover:text-gray-200'
                       }`}
                     />
                     <span>{item.label}</span>
@@ -112,12 +106,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, setMobileOpen }) =
 
                   {item.badge !== undefined && (
                     <span
-                      className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
+                      className={`text-[10px] font-bold px-1.5 py-0.2 rounded-full ${
                         isActive
                           ? 'bg-white/20 text-white'
-                          : typeof item.badge === 'string' && item.badge.includes('new')
-                          ? 'bg-gold text-forest-dark font-extrabold'
-                          : 'bg-forest-border text-emerald-200'
+                          : isPulse
+                          ? 'bg-purple-400/20 text-purple-200'
+                          : 'bg-emerald-500/20 text-emerald-300'
                       }`}
                     >
                       {item.badge}
@@ -129,44 +123,31 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, setMobileOpen }) =
           </nav>
         </div>
 
-        {/* Footer User Profile & System Info (Clickable for Profile & Settings) */}
-        <div
-          onClick={() => handleNavClick('profile')}
-          className={`p-3.5 mx-3 mb-3 rounded-2xl border transition-all cursor-pointer group ${
-            activeScreen === 'profile'
-              ? 'bg-forest-hover border-sage text-white shadow-sm ring-1 ring-sage/50'
-              : 'bg-forest-surface/70 border-forest-border/80 hover:bg-forest-hover hover:border-forest-border text-ivory'
-          }`}
-          title="Click to view and edit Profile & Settings"
-        >
-          <div className="flex items-center gap-3">
-            <div className="relative shrink-0">
-              <img
-                src={userProfile.avatar}
-                alt={userProfile.name}
-                className="w-10 h-10 rounded-xl object-cover border border-forest-border shadow-2xs group-hover:scale-105 transition-transform"
-              />
-              <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-400 border-2 border-forest rounded-full" />
+        {/* Footer: User Profile link */}
+        <div className="p-3 border-t border-[#0d3326]">
+          <button
+            type="button"
+            onClick={() => handleNavClick('profile')}
+            className={`w-full flex items-center gap-2.5 p-2 rounded-xl transition-all text-left ${
+              activeScreen === 'profile'
+                ? 'bg-[#144b36] text-white'
+                : 'hover:bg-[#0f3829] text-gray-300'
+            }`}
+          >
+            <div className="w-8 h-8 rounded-full bg-emerald-700 border border-emerald-500/40 text-white font-bold text-xs flex items-center justify-center shrink-0">
+              {userProfile.name
+                .split(' ')
+                .map((n) => n[0])
+                .join('')
+                .slice(0, 2)
+                .toUpperCase()}
             </div>
-
             <div className="flex-1 min-w-0">
-              <h4 className="text-sm font-bold text-white truncate group-hover:text-emerald-200 transition-colors">
-                {userProfile.name}
-              </h4>
-              <p className="text-[11px] text-gray-400 truncate">{userProfile.title}</p>
+              <p className="text-xs font-bold text-white truncate">{userProfile.name}</p>
+              <p className="text-[10px] text-gray-400 truncate">{userProfile.title}</p>
             </div>
-
-            <div
-              className={`p-1.5 rounded-lg transition-colors ${
-                activeScreen === 'profile'
-                  ? 'bg-sage text-white'
-                  : 'text-gray-400 group-hover:text-white group-hover:bg-forest-surface'
-              }`}
-              title="Profile & Settings"
-            >
-              <Sliders className="w-4 h-4" />
-            </div>
-          </div>
+            <Settings className="w-3.5 h-3.5 text-gray-400" />
+          </button>
         </div>
       </aside>
     </>

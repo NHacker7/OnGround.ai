@@ -29,3 +29,8 @@ dist-server
 .env
 .env.production
 .env.local
+.env*.local
+
+# Temporary and scratch files
+scratch/
+

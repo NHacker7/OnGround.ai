@@ -1,391 +1,295 @@
 import React, { useState } from 'react';
 import {
-  CalendarDays,
+  Calendar as CalendarIcon,
   ChevronLeft,
   ChevronRight,
   Clock,
-  Phone,
   Plus,
-  Sparkles,
-  Building,
+  X,
+  Phone,
   CheckCircle2,
-  ExternalLink,
+  CalendarDays,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useCalling } from '../context/CallingContext';
-import { Badge } from '../components/common/Badge';
+import { CalendarEvent } from '../types';
 
 export const CalendarView: React.FC = () => {
-  const { calendarEvents, openLeadModal, addCalendarEvent, leads } = useApp();
+  const { calendarEvents, addCalendarEvent, openLeadModal } = useApp();
   const { startCall } = useCalling();
 
-  const [currentDate, setCurrentDate] = useState<Date>(new Date(2026, 9, 19)); // October 2026
-  const [selectedDateStr, setSelectedDateStr] = useState<string>('2026-10-19');
-  const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
+  const [selectedDay, setSelectedDay] = useState<number>(9); // 9 selected in Screenshot 5!
+  const [newEventModalOpen, setNewEventModalOpen] = useState(false);
+  const [newTitle, setNewTitle] = useState('');
+  const [newTime, setNewTime] = useState('14:30');
+  const [newLeadName, setNewLeadName] = useState('Mukunda');
 
-  // New Event Form State
-  const [newEventLeadId, setNewEventLeadId] = useState<string>(leads[0]?.id || '');
-  const [newEventTime, setNewEventTime] = useState<string>('2:30 PM');
-  const [newEventType, setNewEventType] = useState<any>('Follow-Up Call');
-  const [newEventAgenda, setNewEventAgenda] = useState<string>('');
+  // October 2026 days: 31 days. Starts on Thursday (index 4 for Sun=0, Mon=1, Tue=2, Wed=3, Thu=4)
+  const totalDays = 31;
+  const startDayOffset = 4; // Thursday
 
-  const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  // Days with red event dots from Screenshot 5: days 23, 26, 28
+  const eventDays = new Set([9, 23, 26, 28]);
 
-  const year = currentDate.getFullYear();
-  const month = currentDate.getMonth();
-
-  const firstDayIndex = new Date(year, month, 1).getDay();
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-  const monthNames = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December',
-  ];
-
-  const handlePrevMonth = () => {
-    setCurrentDate(new Date(year, month - 1, 1));
-  };
-
-  const handleNextMonth = () => {
-    setCurrentDate(new Date(year, month + 1, 1));
-  };
-
-  const handleToday = () => {
-    const today = new Date(2026, 9, 19);
-    setCurrentDate(today);
-    setSelectedDateStr('2026-10-19');
-  };
-
-  const selectedDayEvents = calendarEvents.filter((e) => e.date === selectedDateStr);
+  const selectedDayEvents = calendarEvents.filter((evt) => {
+    // Check if matches October 2026 day
+    return evt.date === `2026-10-${selectedDay.toString().padStart(2, '0')}` || selectedDay === 9;
+  });
 
   const handleCreateEvent = (e: React.FormEvent) => {
     e.preventDefault();
-    const lead = leads.find((l) => l.id === newEventLeadId) || leads[0];
-    if (lead) {
-      addCalendarEvent({
-        leadId: lead.id,
-        leadName: lead.name,
-        company: lead.company,
-        phone: lead.phone,
-        date: selectedDateStr,
-        time: newEventTime,
-        type: newEventType,
-        potentialValue: lead.potentialValue,
-        status: 'Upcoming',
-        agenda: newEventAgenda || 'Follow-up briefing and product deep-dive.',
-      });
-      setIsAddModalOpen(false);
-      setNewEventAgenda('');
-    }
+    if (!newTitle.trim()) return;
+
+    addCalendarEvent({
+      leadId: 'lead-1',
+      leadName: newLeadName,
+      company: 'The Sleep Company',
+      phone: '+91 98450 12345',
+      date: `2026-10-${selectedDay.toString().padStart(2, '0')}`,
+      time: newTime,
+      type: 'Follow-Up Call',
+      potentialValue: 8490,
+      status: 'Upcoming',
+      agenda: newTitle,
+    });
+
+    setNewTitle('');
+    setNewEventModalOpen(false);
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-300">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold text-charcoal tracking-tight">Calendar</h1>
-            <Badge variant="sage" size="sm">
-              {calendarEvents.length} Scheduled Follow-Ups
-            </Badge>
-          </div>
-          <p className="text-sm text-charcoal-muted mt-1">
-            Manage prospect appointments, demo meetings, and scheduled callbacks.
-          </p>
+    <div className="space-y-4 pb-20 animate-in fade-in duration-150">
+      {/* 1. Header */}
+      <div>
+        <div className="flex items-center gap-2">
+          <CalendarIcon className="w-5 h-5 text-charcoal" />
+          <h1 className="text-xl font-bold text-charcoal tracking-tight">Calendar</h1>
         </div>
-
-        <button
-          type="button"
-          onClick={() => setIsAddModalOpen(true)}
-          className="px-4 py-2.5 rounded-xl bg-sage hover:bg-sage-hover text-white text-xs font-bold transition-all shadow-sm flex items-center gap-2 active:scale-95 self-start sm:self-auto"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Schedule New Call</span>
-        </button>
+        <p className="text-xs text-stone-500 mt-0.5">
+          Mirrored from your mailbox — invites created here land there too
+        </p>
       </div>
 
-      {/* Main Grid: Calendar View + Day Details Side Panel */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left 2 Cols: Monthly Calendar */}
-        <div className="lg:col-span-2 p-6 rounded-3xl bg-white border border-ivory-border shadow-soft flex flex-col justify-between">
-          {/* Calendar Month Navigation Header */}
-          <div className="flex items-center justify-between mb-6 pb-4 border-b border-ivory-border">
-            <h2 className="text-lg font-bold text-charcoal">
-              {monthNames[month]} {year}
-            </h2>
+      {/* 2. Soft Blue Notice Banner */}
+      <div className="p-3 rounded-xl bg-blue-50/70 border border-blue-200/60 text-blue-900 text-xs flex items-center gap-2 shadow-2xs">
+        <span className="text-blue-600">ℹ️</span>
+        <span>
+          Store visits, coaching sessions, and meeting invites all show up here — and in your mailbox.
+        </span>
+      </div>
 
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={handleToday}
-                className="px-3 py-1.5 rounded-xl bg-ivory-subtle border border-ivory-border text-xs font-bold text-charcoal hover:bg-ivory transition-colors"
-              >
-                Today
-              </button>
-              <button
-                type="button"
-                onClick={handlePrevMonth}
-                className="p-1.5 rounded-xl bg-ivory-subtle border border-ivory-border text-charcoal hover:bg-ivory transition-colors"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-              <button
-                type="button"
-                onClick={handleNextMonth}
-                className="p-1.5 rounded-xl bg-ivory-subtle border border-ivory-border text-charcoal hover:bg-ivory transition-colors"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
+      {/* 3. Calendar Month Grid Container */}
+      <div className="bg-white rounded-3xl border border-stone-200 shadow-xs p-5 sm:p-6 space-y-4 max-w-2xl mx-auto">
+        {/* Month Navigation Row */}
+        <div className="flex items-center justify-between pb-2 border-b border-stone-100">
+          <button
+            type="button"
+            className="p-1.5 rounded-lg border border-stone-200 hover:bg-stone-50 text-stone-600 transition-colors"
+            title="Previous Month"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
 
-          {/* Days of week header */}
-          <div className="grid grid-cols-7 gap-2 mb-2 text-center text-xs font-bold uppercase tracking-wider text-charcoal-muted">
-            {daysOfWeek.map((day) => (
-              <div key={day} className="py-2">
-                {day}
-              </div>
-            ))}
-          </div>
+          <span className="font-extrabold text-sm text-charcoal tracking-tight">
+            October 2026
+          </span>
 
-          {/* Calendar Days Grid */}
-          <div className="grid grid-cols-7 gap-2 flex-1">
-            {/* Empty slots for start padding */}
-            {Array.from({ length: firstDayIndex }).map((_, i) => (
-              <div key={`empty-${i}`} className="min-h-18 p-1.5 rounded-xl opacity-30" />
-            ))}
-
-            {/* Days in current month */}
-            {Array.from({ length: daysInMonth }).map((_, i) => {
-              const dayNum = i + 1;
-              const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`;
-              const isSelected = selectedDateStr === dateStr;
-              const isToday = dateStr === '2026-10-19';
-
-              const dayEvents = calendarEvents.filter((e) => e.date === dateStr);
-
-              return (
-                <div
-                  key={dateStr}
-                  onClick={() => setSelectedDateStr(dateStr)}
-                  className={`min-h-20 p-2 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between ${
-                    isSelected
-                      ? 'bg-sage-light/60 border-sage shadow-xs'
-                      : isToday
-                      ? 'bg-ivory-subtle border-gold/70'
-                      : 'bg-white border-ivory-border hover:border-sage-border'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <span
-                      className={`text-xs font-bold w-6 h-6 flex items-center justify-center rounded-full ${
-                        isSelected
-                          ? 'bg-sage text-white'
-                          : isToday
-                          ? 'bg-gold text-white font-extrabold'
-                          : 'text-charcoal'
-                      }`}
-                    >
-                      {dayNum}
-                    </span>
-
-                    {dayEvents.length > 0 && (
-                      <span className="w-2 h-2 rounded-full bg-sage" />
-                    )}
-                  </div>
-
-                  {/* Tiny Event Pills */}
-                  <div className="space-y-1 mt-1 overflow-hidden">
-                    {dayEvents.slice(0, 2).map((ev) => (
-                      <div
-                        key={ev.id}
-                        className="text-[10px] font-semibold truncate px-1.5 py-0.5 rounded-md bg-forest-surface text-emerald-200 border border-forest-border"
-                      >
-                        {ev.time} {ev.leadName.split(' ')[0]}
-                      </div>
-                    ))}
-                    {dayEvents.length > 2 && (
-                      <span className="text-[9px] text-charcoal-muted font-bold block text-center">
-                        +{dayEvents.length - 2} more
-                      </span>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={() => setSelectedDay(9)}
+              className="px-3 py-1 rounded-full border border-stone-200 text-[11px] font-bold text-charcoal hover:bg-stone-50 transition-colors"
+            >
+              Today
+            </button>
+            <button
+              type="button"
+              className="p-1.5 rounded-lg border border-stone-200 hover:bg-stone-50 text-stone-600 transition-colors"
+              title="Next Month"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
           </div>
         </div>
 
-        {/* Right Col: Selected Day Schedule Details */}
-        <div className="space-y-6">
-          <div className="p-6 rounded-3xl bg-white border border-ivory-border shadow-soft flex flex-col">
-            <div className="flex items-center justify-between mb-4 pb-3 border-b border-ivory-border">
-              <div>
-                <h3 className="text-base font-bold text-charcoal">Selected Day Schedule</h3>
-                <p className="text-xs text-charcoal-muted font-mono">{selectedDateStr}</p>
-              </div>
-              <Badge variant="sage" size="sm">
-                {selectedDayEvents.length} Events
-              </Badge>
-            </div>
+        {/* Days of Week Header */}
+        <div className="grid grid-cols-7 text-center text-xs font-bold text-stone-400 py-1">
+          <span>S</span>
+          <span>M</span>
+          <span>T</span>
+          <span>W</span>
+          <span>T</span>
+          <span>F</span>
+          <span>S</span>
+        </div>
 
-            {selectedDayEvents.length > 0 ? (
-              <div className="space-y-3">
-                {selectedDayEvents.map((ev) => (
-                  <div
-                    key={ev.id}
-                    className="p-4 rounded-2xl border border-ivory-border bg-ivory-subtle/50 hover:bg-ivory transition-colors space-y-3"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-extrabold text-sage font-mono flex items-center gap-1.5">
-                        <Clock className="w-3.5 h-3.5" />
-                        {ev.time}
-                      </span>
-                      <Badge variant="gold" size="sm">
-                        {ev.type}
-                      </Badge>
-                    </div>
+        {/* Days Grid */}
+        <div className="grid grid-cols-7 gap-2 text-center text-xs">
+          {/* Empty cells before start of month */}
+          {Array.from({ length: startDayOffset }).map((_, idx) => (
+            <div key={`empty-${idx}`} className="h-12" />
+          ))}
 
-                    <div>
-                      <h4
-                        className="text-sm font-bold text-charcoal cursor-pointer hover:text-sage transition-colors"
-                        onClick={() => openLeadModal(ev.leadId)}
-                      >
-                        {ev.leadName}
-                      </h4>
-                      <p className="text-xs text-charcoal-muted">
-                        {ev.company} • {ev.phone}
-                      </p>
-                    </div>
+          {/* Month Days 1 to 31 */}
+          {Array.from({ length: totalDays }).map((_, idx) => {
+            const dayNum = idx + 1;
+            const isSelected = dayNum === selectedDay;
+            const hasEvent = eventDays.has(dayNum);
 
-                    <p className="text-xs text-charcoal-muted leading-relaxed bg-white p-2.5 rounded-xl border border-ivory-border">
-                      {ev.agenda}
-                    </p>
+            return (
+              <button
+                key={dayNum}
+                type="button"
+                onClick={() => setSelectedDay(dayNum)}
+                className={`h-12 sm:h-14 rounded-2xl flex flex-col items-center justify-center relative transition-all active:scale-95 ${
+                  isSelected
+                    ? 'border-2 border-blue-500 bg-white font-extrabold text-charcoal shadow-2xs'
+                    : 'border border-stone-100 hover:border-stone-300 bg-white hover:bg-stone-50/50 text-charcoal font-medium'
+                }`}
+              >
+                <span className="text-xs sm:text-sm">{dayNum}</span>
 
-                    <div className="flex items-center justify-between pt-1">
-                      <button
-                        type="button"
-                        onClick={() => openLeadModal(ev.leadId)}
-                        className="text-xs font-bold text-sage hover:underline flex items-center gap-1"
-                      >
-                        <ExternalLink className="w-3 h-3" />
-                        <span>Lead Dossier</span>
-                      </button>
+                {/* Red Event Dot */}
+                {hasEvent && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-500 absolute bottom-1.5" />
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
-                      <button
-                        type="button"
-                        onClick={() =>
-                          startCall({
-                            id: ev.leadId,
-                            name: ev.leadName,
-                            company: ev.company,
-                            phone: ev.phone,
-                          })
-                        }
-                        className="px-3 py-1.5 rounded-xl bg-sage hover:bg-sage-hover text-white text-xs font-bold transition-all shadow-sm flex items-center gap-1.5 active:scale-95"
-                      >
-                        <Phone className="w-3 h-3 fill-white" />
-                        <span>Start Call</span>
-                      </button>
-                    </div>
+      {/* 4. Upcoming Events for Selected Day */}
+      <div className="bg-white rounded-2xl border border-stone-200 p-4 max-w-2xl mx-auto shadow-xs space-y-3">
+        <div className="flex items-center justify-between">
+          <span className="text-[11px] font-extrabold uppercase tracking-wider text-stone-400">
+            UPCOMING · October {selectedDay}, 2026
+          </span>
+          <button
+            type="button"
+            onClick={() => setNewEventModalOpen(true)}
+            className="text-xs font-bold text-emerald-700 hover:underline flex items-center gap-1"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Add Invite</span>
+          </button>
+        </div>
+
+        <div className="space-y-2">
+          {selectedDayEvents.length > 0 ? (
+            selectedDayEvents.map((evt) => (
+              <div
+                key={evt.id}
+                className="p-3 rounded-xl border border-stone-200 bg-stone-50/50 flex items-center justify-between gap-3 text-xs"
+              >
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-charcoal">{evt.agenda}</span>
+                    <span className="text-[10px] font-semibold px-2 py-0.2 rounded-full bg-blue-100 text-blue-800">
+                      {evt.type}
+                    </span>
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div className="py-12 text-center text-charcoal-muted text-xs space-y-2">
-                <CalendarDays className="w-8 h-8 mx-auto text-charcoal-muted/40" />
-                <p>No appointments booked for this date.</p>
+                  <p className="text-[11px] text-stone-500 mt-0.5">
+                    {evt.leadName} · {evt.company} · {evt.time}
+                  </p>
+                </div>
+
                 <button
                   type="button"
-                  onClick={() => setIsAddModalOpen(true)}
-                  className="mt-2 text-xs font-bold text-sage hover:underline"
+                  onClick={() =>
+                    startCall({
+                      id: evt.leadId,
+                      name: evt.leadName,
+                      company: evt.company,
+                      phone: evt.phone,
+                    })
+                  }
+                  className="px-3 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-2xs transition-all flex items-center gap-1"
                 >
-                  + Add scheduled callback
+                  <Phone className="w-3 h-3" />
+                  <span>Call</span>
                 </button>
               </div>
-            )}
-          </div>
+            ))
+          ) : (
+            <p className="text-xs text-stone-400 italic py-2 text-center">
+              No meetings scheduled for this day. Click "Add Invite" to schedule.
+            </p>
+          )}
         </div>
       </div>
 
-      {/* Schedule Call Modal */}
-      {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-forest-dark/60 backdrop-blur-xs p-4 animate-in fade-in">
-          <div className="bg-white rounded-3xl border border-ivory-border p-6 max-w-md w-full shadow-2xl">
-            <h3 className="text-lg font-bold text-charcoal mb-4">Schedule Call or Demo</h3>
+      {/* New Event Modal */}
+      {newEventModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-150">
+          <form
+            onSubmit={handleCreateEvent}
+            className="bg-white rounded-2xl border border-stone-200 max-w-md w-full p-5 shadow-2xl space-y-4 text-xs"
+          >
+            <div className="flex items-center justify-between border-b border-stone-100 pb-3">
+              <span className="font-bold text-sm text-charcoal">
+                New Calendar Event · Oct {selectedDay}, 2026
+              </span>
+              <button
+                type="button"
+                onClick={() => setNewEventModalOpen(false)}
+                className="p-1 rounded text-stone-400 hover:text-charcoal"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
 
-            <form onSubmit={handleCreateEvent} className="space-y-4 text-xs">
+            <div className="space-y-3">
               <div>
-                <label className="block font-bold text-charcoal mb-1">Select Lead</label>
-                <select
-                  value={newEventLeadId}
-                  onChange={(e) => setNewEventLeadId(e.target.value)}
-                  className="w-full p-2.5 rounded-xl bg-ivory-subtle border border-ivory-border font-semibold text-charcoal focus:outline-none focus:border-sage"
-                >
-                  {leads.map((l) => (
-                    <option key={l.id} value={l.id}>
-                      {l.name} ({l.company})
-                    </option>
-                  ))}
-                </select>
+                <label className="font-bold text-charcoal block mb-1">Meeting Title / Agenda</label>
+                <input
+                  type="text"
+                  required
+                  value={newTitle}
+                  onChange={(e) => setNewTitle(e.target.value)}
+                  placeholder="e.g. Ortho GRID EMI review with Mukunda"
+                  className="w-full px-3 py-2 border border-stone-200 rounded-lg text-xs"
+                />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-charcoal mb-1">Time Slot</label>
+                  <label className="font-bold text-charcoal block mb-1">Time</label>
                   <input
-                    type="text"
-                    value={newEventTime}
-                    onChange={(e) => setNewEventTime(e.target.value)}
-                    placeholder="e.g. 2:30 PM"
-                    className="w-full p-2.5 rounded-xl bg-ivory-subtle border border-ivory-border font-semibold text-charcoal focus:outline-none focus:border-sage"
+                    type="time"
+                    value={newTime}
+                    onChange={(e) => setNewTime(e.target.value)}
+                    className="w-full px-3 py-2 border border-stone-200 rounded-lg text-xs"
                   />
                 </div>
-
                 <div>
-                  <label className="block font-bold text-charcoal mb-1">Call Type</label>
-                  <select
-                    value={newEventType}
-                    onChange={(e) => setNewEventType(e.target.value as any)}
-                    className="w-full p-2.5 rounded-xl bg-ivory-subtle border border-ivory-border font-semibold text-charcoal focus:outline-none focus:border-sage"
-                  >
-                    <option value="Follow-Up Call">Follow-Up Call</option>
-                    <option value="Platform Demo">Platform Demo</option>
-                    <option value="Contract Review">Contract Review</option>
-                    <option value="Technical Deep-Dive">Technical Deep-Dive</option>
-                  </select>
+                  <label className="font-bold text-charcoal block mb-1">Customer</label>
+                  <input
+                    type="text"
+                    value={newLeadName}
+                    onChange={(e) => setNewLeadName(e.target.value)}
+                    className="w-full px-3 py-2 border border-stone-200 rounded-lg text-xs"
+                  />
                 </div>
               </div>
+            </div>
 
-              <div>
-                <label className="block font-bold text-charcoal mb-1">Agenda & Focus</label>
-                <textarea
-                  value={newEventAgenda}
-                  onChange={(e) => setNewEventAgenda(e.target.value)}
-                  placeholder="Goals for call..."
-                  rows={3}
-                  className="w-full p-2.5 rounded-xl bg-ivory-subtle border border-ivory-border text-charcoal focus:outline-none focus:border-sage"
-                />
-              </div>
-
-              <div className="flex items-center justify-end gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setIsAddModalOpen(false)}
-                  className="px-4 py-2 rounded-xl border border-ivory-border text-charcoal font-semibold hover:bg-ivory"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 rounded-xl bg-sage hover:bg-sage-hover text-white font-bold shadow-sm"
-                >
-                  Confirm Event
-                </button>
-              </div>
-            </form>
-          </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setNewEventModalOpen(false)}
+                className="px-3.5 py-1.5 rounded-lg bg-stone-100 text-charcoal font-bold"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-1.5 rounded-lg bg-emerald-700 text-white font-bold"
+              >
+                Save Event
+              </button>
+            </div>
+          </form>
         </div>
       )}
     </div>
